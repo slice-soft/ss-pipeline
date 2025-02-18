@@ -3,6 +3,14 @@ name: Build Docker Image
 on:
   workflow_call:
     inputs:
+      workdir:
+        description: "The path to the Dockerfile"
+        required: true
+        type: string
+      dockerfile:
+        description: "The path to the Dockerfile"
+        required: true
+        type: string
       image_name:
         description: "The name of the Docker image"
         required: true
