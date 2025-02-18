@@ -19,6 +19,22 @@ on:
         description: "The version tag for the Docker image"
         required: true
         type: string
+      language:
+        description: "Programming language (go, python, node)"
+        required: true
+        type: string
+      language_version:
+        description: "Version of the programming language"
+        required: true
+        type: string
+      submodule_path:
+        description: "Path to the Git submodule (for Go projects)"
+        required: false
+        type: string
+      submodule_version:
+        description: "Version/tag of the submodule to checkout"
+        required: false
+        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -37,6 +53,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Set up Go
+        if: ${{ inputs.language == 'go' }}
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ inputs.language_version }}
+
+      - name: download submodule
+        if: ${{ inputs.language == 'go' && inputs.submodule_path }}
+        run: git submodule update --init --recursive ${{ inputs.submodule_path }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
