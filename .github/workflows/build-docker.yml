@@ -93,4 +93,7 @@ jobs:
       
       - name: Push Docker image
         run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+      - name: Push Docker image with latest tag
+        run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         
