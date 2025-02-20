@@ -7,9 +7,6 @@ on:
         description: "The tag of the release"
         required: true
         type: string
-    secrets:
-      GITHUB_TOKEN:
-        required: true
 
 jobs:
   release:
