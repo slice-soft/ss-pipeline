@@ -8,7 +8,7 @@ on:
       - main
 
 jobs:
-  release:
+  release-pipeline:
     if: github.event.pull_request.merged == true
     uses: ./.github/workflows/create-release.yml
     secrets: inherit

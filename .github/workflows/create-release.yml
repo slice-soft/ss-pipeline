@@ -1,4 +1,4 @@
-name: Release Go Library
+name: Release
 
 on:
   workflow_call:
