@@ -63,17 +63,15 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build \
-            --build-arg SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY}" \
+          docker build --no-cache \
+            --secret id=ssh_private_key,src="$SSH_KEY_FILE" \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
             -f ${{ inputs.dockerfile }} \
             ${{ inputs.workdir }}
-
-      - name: Tag Docker image as latest
-        run: docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Push Docker image
         run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-      - name: Push Docker image with latest tag
-        run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+      # - name: Push Docker image with latest tag
+      #   run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
