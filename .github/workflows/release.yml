@@ -24,4 +24,9 @@ jobs:
         uses: ./.github/workflows/reusable-workflow.yml
         with:
           tag: ${{ steps.tag.outputs.tag }}
-          secrets: inherit
+        secrets: inherit
+        permissions:
+          contents: read
+          packages: write
+          attestations: write
+          id-token: write
