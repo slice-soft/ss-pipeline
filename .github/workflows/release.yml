@@ -8,23 +8,6 @@ on:
       - main
 
 jobs:
-  tag:
-    if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-    outputs:
-      tag: ${{ steps.tag.outputs.tag }}
-    steps:
-      - name: Tag
-        id: tag
-        uses: K-Phoen/semver-release-action@master
-        with:
-          release_branch: main
-          release_strategy: tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   release:
-    needs: tag
     uses: ./.github/workflows/create-release.yml
-    with:
-      tag: ${{ needs.tag.outputs.tag }}
     secrets: inherit
