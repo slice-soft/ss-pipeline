@@ -64,7 +64,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            --ssh default \
+            --build-arg SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY}" \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
             -f ${{ inputs.dockerfile }} \
             ${{ inputs.workdir }}
