@@ -23,6 +23,5 @@ jobs:
       - name: Create Release
         uses: ./.github/workflows/reusable-workflow.yml
         with:
-          tag: ${{ steps.tag.outputs.version }}
-        secrets:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.tag.outputs.tag }}
+          secrets: inherit
