@@ -8,9 +8,11 @@ on:
       - main
 
 jobs:
-  release:
+  tag:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - name: Tag
         id: tag
@@ -20,13 +22,9 @@ jobs:
           release_strategy: tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create Release
-        uses: ./.github/workflows/reusable-workflow.yml
-        with:
-          tag: ${{ steps.tag.outputs.tag }}
-        secrets: inherit
-        permissions:
-          contents: read
-          packages: write
-          attestations: write
-          id-token: write
+  release:
+    needs: tag
+    uses: ./.github/workflows/create-release.yml
+    with:
+      tag: ${{ needs.tag.outputs.tag }}
+    secrets: inherit
