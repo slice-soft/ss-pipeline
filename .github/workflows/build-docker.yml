@@ -26,7 +26,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  IMAGE_TAG: ${{ inputs.version }}
+  IMAGE_VERSION: ${{ inputs.version }}
 
 jobs:
   build-and-push:
@@ -68,7 +68,7 @@ jobs:
         run: |
           docker build --no-cache \
             --secret id=ssh_private_key,src=id_rsa \
-            -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }} \
             -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
             -f ${{ inputs.dockerfile }} \
             ${{ inputs.workdir }}
@@ -76,7 +76,7 @@ jobs:
           DOCKER_BUILDKIT: 1
 
       - name: Push Docker image with version tag
-        run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+        run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
         
       - name: Push Docker image with latest tag
         run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
