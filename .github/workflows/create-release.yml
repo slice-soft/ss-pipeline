@@ -7,7 +7,12 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Tag
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necesario para obtener todas las etiquetas
+
+      - name: Generate SemVer Tag
         id: tag
         uses: K-Phoen/semver-release-action@master
         with:
@@ -15,6 +20,11 @@ jobs:
           release_strategy: tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Major Version
+        id: extract_major
+        run: echo "major_version=$(echo ${{ steps.tag.outputs.tag }} | cut -d. -f1)" >> $GITHUB_ENV
+
       - name: Create Release
         id: create-release
         uses: actions/create-release@v1
@@ -25,3 +35,10 @@ jobs:
           release_name: ${{ steps.tag.outputs.tag }}
           draft: false
           prerelease: false
+
+      - name: Update Major Tag
+        run: |
+          git tag -f ${{ env.major_version }}
+          git push origin ${{ env.major_version }} --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
