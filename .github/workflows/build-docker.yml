@@ -22,6 +22,8 @@ on:
     secrets:
       SSH_PRIVATE_KEY:
         required: true
+      GITHUB_TOKEN:
+        required: true
 
 env:
   REGISTRY: ghcr.io
