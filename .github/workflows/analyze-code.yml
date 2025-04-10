@@ -25,8 +25,14 @@ jobs:
       - name: Install Linguist gem
         run: gem install github-linguist
 
-      - name: Run Linguist analysis
+      - name: Run Linguist analysis and save to file
         run: |
           echo "Linguist analysis result:"
-          github-linguist
-          
+          github-linguist ${{ inputs.workdir }} > github-linguist.txt
+          cat github-linguist.txt
+
+      - name: Upload Linguist report
+        uses: actions/upload-artifact@v4
+        with:
+          name: linguist-report
+          path: github-linguist.txt
