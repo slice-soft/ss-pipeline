@@ -28,4 +28,5 @@ jobs:
       - name: Run Linguist analysis
         run: |
           echo "Linguist analysis result:"
-          linguist ${{ inputs.workdir }}
+          github-linguist
+          
