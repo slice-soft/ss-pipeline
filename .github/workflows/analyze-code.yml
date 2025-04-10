@@ -34,6 +34,5 @@ jobs:
 
       - name: Run Linguist analysis
         run: |
-          cd linguist
           echo "Linguist analysis result:"
           ./bin/linguist ../
