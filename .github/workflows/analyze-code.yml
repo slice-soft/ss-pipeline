@@ -36,5 +36,5 @@ jobs:
         run: |
           cd linguist
           echo "Linguist analysis result:"
-          bundle exec linguist ../
+          bundle exec bin/linguist ../
         working-directory: ${{ inputs.workdir }}
