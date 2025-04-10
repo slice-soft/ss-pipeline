@@ -22,19 +22,10 @@ jobs:
         with:
           ruby-version: '3.1'
 
-      - name: Install Bundler
-        run: gem install bundler
-
-      - name: Clone Linguist and install dependencies
-        run: |
-          git clone https://github.com/github/linguist.git
-          cd linguist
-          bundle install
-        working-directory: ${{ inputs.workdir }}
+      - name: Install Linguist gem
+        run: gem install github-linguist
 
       - name: Run Linguist analysis
         run: |
-          cd linguist
           echo "Linguist analysis result:"
-          bundle exec bin/linguist ../
-        working-directory: ${{ inputs.workdir }}
+          linguist ${{ inputs.workdir }}
