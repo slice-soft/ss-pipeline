@@ -1,0 +1,40 @@
+name: Analyze Repository Languages with Linguist
+
+on:
+  workflow_call:
+    inputs:
+      workdir:
+        description: "The path to the working directory"
+        required: false
+        type: string
+        default: "."
+
+jobs:
+  linguist-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+
+      - name: Install Bundler
+        run: gem install bundler
+
+      - name: Clone Linguist and install dependencies
+        run: |
+          git clone https://github.com/github/linguist.git
+          cd linguist
+          bundle install
+        working-directory: ${{ inputs.workdir }}
+
+      - name: Run Linguist analysis
+        run: |
+          cd linguist
+          echo "Linguist analysis result:"
+          bundle exec bin/linguist ../
+        working-directory: ${{ inputs.workdir }}
