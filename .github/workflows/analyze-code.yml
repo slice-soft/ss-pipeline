@@ -28,7 +28,7 @@ jobs:
       - name: Run Linguist analysis and save to file
         run: |
           echo "Linguist analysis result:"
-          github-linguist ${{ inputs.workdir }} > github-linguist.txt
+          github-linguist > github-linguist.txt
           cat github-linguist.txt
 
       - name: Upload Linguist report
