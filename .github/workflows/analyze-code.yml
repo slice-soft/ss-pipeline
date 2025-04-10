@@ -29,10 +29,12 @@ jobs:
         run: |
           git clone https://github.com/github/linguist.git
           cd linguist
-          bundle config set --local path 'vendor/bundle' # opcional, si no quieres que use el sistema global
-          bundle install --binstubs
+          bundle install
+        working-directory: ${{ inputs.workdir }}
 
       - name: Run Linguist analysis
         run: |
+          cd linguist
           echo "Linguist analysis result:"
-          ./bin/linguist ../
+          bundle exec linguist ../
+        working-directory: ${{ inputs.workdir }}
