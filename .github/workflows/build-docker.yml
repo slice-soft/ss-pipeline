@@ -29,6 +29,11 @@ env:
   IMAGE_VERSION: ${{ inputs.version }}
 
 jobs:
+  linguist-analysis:
+    uses: ./.github/workflows/analyze-code.yml
+    with:
+      workdir: .
+    secrets: inherit
   build:
     runs-on: ubuntu-latest
     permissions:
