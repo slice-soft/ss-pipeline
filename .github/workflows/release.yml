@@ -9,13 +9,6 @@ on:
 
 jobs:
 
-  linguist-analysis:
-    if: github.event.pull_request.merged == true
-    uses: ./.github/workflows/analyze-code.yml
-    with:
-      workdir: .
-    secrets: inherit
-
   release-pipeline:
     if: github.event.pull_request.merged == true
     uses: ./.github/workflows/create-release.yml
