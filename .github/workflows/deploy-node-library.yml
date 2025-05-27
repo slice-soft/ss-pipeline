@@ -3,18 +3,22 @@ on:
   workflow_call:
     inputs:
       node-version:
+        description: "Node.js version to use"
         required: true
         type: string
         default: "22"
       build-command:
+        description: "Command to build the library"
         required: false
         type: string
         default: "npm run build"
       save-folder:
+        description: "Folder to save build artifacts"
         required: false
         type: string
         default: "dist"
       package-file:
+        description: "Path to the package file (e.g., package.json)"
         required: true
         type: string
         default: "./package.json"
