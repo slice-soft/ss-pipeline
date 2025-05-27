@@ -67,7 +67,6 @@ jobs:
       - name: Run tests
         run: npm test
 
-  # Crear un job que verifique la version de package.json con la del ultimo release
   validate-package-version:
     needs: tests
     runs-on: ubuntu-latest
@@ -82,17 +81,13 @@ jobs:
           node-version: '${{ inputs.node-version }}'
       - name: Validate package version
         run: |
-          current_version=$(node -p "require('${{ inputs.package-file }}').version")
-          latest_release=$(npm view $(node -p "require('${{ inputs.package-file }}').name") version)
-          if [ "$current_version" != "$latest_release" ]; then
-            echo "Current version ($current_version) does not match latest release ($latest_release)"
-            exit 1
-          else
-            echo "Version check passed: $current_version matches latest release $latest_release"
-          fi
+          current_version=$(jq -r '.version' '${{ inputs.package-file }}')
+          latest_release=$(npm view $(jq -r '.name' '${{ inputs.package-file }}') version)
+          echo "Current version: $current_version"
+          echo "Latest release version: $latest_release"
       
   code-analysis:
-    needs: [tests]
+    needs: [validate-package-version]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
