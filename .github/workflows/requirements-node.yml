@@ -94,6 +94,22 @@ jobs:
           echo "Package name: $package_name"
           latest_release=$(npm view "$package_name" version --registry https://npm.pkg.github.com/ || echo "")
           echo "Latest release version: $latest_release"
+          # Semver bump validation
+          IFS='.' read -r last_major last_minor last_patch <<< "$latest_release"
+          patch_version="$last_major.$last_minor.$((last_patch+1))"
+          minor_version="$last_major.$((last_minor+1)).0"
+          major_version="$((last_major+1)).0.0"
+
+          if [ "$current_version" = "$patch_version" ]; then
+            echo "Change type: patch"
+          elif [ "$current_version" = "$minor_version" ]; then
+            echo "Change type: minor"
+          elif [ "$current_version" = "$major_version" ]; then
+            echo "Change type: major"
+          else
+            echo "Error: invalid version bump. Expected one of: $patch_version, $minor_version, $major_version"
+            exit 1
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
