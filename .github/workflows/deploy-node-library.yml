@@ -64,6 +64,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -95,9 +97,10 @@ jobs:
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create release
-        uses: ./.github/workflows/create-release.yml
-        with:
-          version: ${{ steps.get-version.outputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    needs: deploy
+    uses: ./.github/workflows/create-release.yml
+    with:
+      new-version: ${{ needs.deploy.outputs.version }}
+    secrets: inherit
