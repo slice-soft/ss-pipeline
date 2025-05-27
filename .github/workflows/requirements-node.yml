@@ -90,8 +90,12 @@ jobs:
         run: |
           current_version=$(jq -r '.version' '${{ inputs.package-file }}')
           echo "Current version: $current_version"
-          latest_release=$(npm view $(jq -r '.name' '${{ inputs.package-file }}') version)
+          package_name=$(jq -r '.name' '${{ inputs.package-file }}')
+          echo "Package name: $package_name"
+          latest_release=$(npm view "$package_name" version --registry https://npm.pkg.github.com/ || echo "")
           echo "Latest release version: $latest_release"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
   code-analysis:
     needs: [validate-package-version]
