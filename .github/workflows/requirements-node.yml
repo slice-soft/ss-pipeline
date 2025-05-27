@@ -79,6 +79,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '${{ inputs.node-version }}'
+          registry-url: https://npm.pkg.github.com/
+          always-auth: true
+      - name: Configure GitHub Packages for npm view
+        run: |
+          echo "@${{ github.repository_owner }}:registry=https://npm.pkg.github.com/" > ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+          echo "always-auth=true" >> ~/.npmrc
       - name: Validate package version
         run: |
           current_version=$(jq -r '.version' '${{ inputs.package-file }}')
