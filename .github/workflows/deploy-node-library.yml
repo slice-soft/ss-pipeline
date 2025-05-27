@@ -1,0 +1,94 @@
+name: Deploy Node.js Library
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        required: true
+        type: string
+        default: "22"
+      build-command:
+        required: false
+        type: string
+        default: "npm run build"
+      save-folder:
+        required: false
+        type: string
+        default: "dist"
+      package-file:
+        required: true
+        type: string
+        default: "./package.json"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Restore Cache
+        uses: actions/cache@v3
+        id: restore-cache
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: node_modules
+          key: npm-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: npm-${{ env.cache-name }}
+      - name: Install dependencies
+        if: steps.restore-cache.outputs.cache-hit != 'true'
+        run: npm ci
+      - name: Build the library
+        run: ${{ inputs.build-command }}
+      - name: Save build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.save-folder }}
+          path: dist
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          registry-url: https://npm.pkg.github.com
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.save-folder }}
+
+      - name: Get Version from Package File
+        id: get-version
+        run: echo "version=$(jq -r '.version' ${{ inputs.package-file }})" >> $GITHUB_OUTPUT
+
+      - name: Publish to GitHub Packages
+        run: |
+          npm config set '//npm.pkg.github.com/:_authToken' "${{ secrets.GITHUB_TOKEN }}"
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create release
+        uses: ./.github/workflows/create-release.yml
+        with:
+          version: ${{ steps.get-version.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
