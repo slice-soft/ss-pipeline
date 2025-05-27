@@ -14,75 +14,69 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '${{ inputs.node-version }}'
-      - name: Cache dependencies
+      - name: Restore Cache
         uses: actions/cache@v3
+        id: restore-cache
+        env:
+          cache-name: cache-node-modules
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ inputs.node-version }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ inputs.node-version }}-
-      - name: Install dependencies
-        run: npm install
-      - name: Upload dependencies
-        uses: actions/upload-artifact@v4
-        with:
-          name: deps
           path: node_modules
+          key: npm-${{ env.cache-name}}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: npm-${{ env.cache-name }}
+      - name: Install dependencies
+        run: npm ci
 
-  build:
+  tests:
     needs: dependencies
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '${{ inputs.node-version }}'
-      - name: Download dependencies
-        uses: actions/download-artifact@v4
+      - name: Restore Cache
+        uses: actions/cache@v3
+        id: restore-cache
+        env:
+          cache-name: cache-node-modules
         with:
-          name: deps
           path: node_modules
-      - name: Build project
-        run: npm run build
-
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '${{ inputs.node-version }}'
-      - name: Download dependencies
-        uses: actions/download-artifact@v4
-        with:
-          name: deps
-          path: node_modules
-      - name: Run tests with coverage
-        run: npm run test
+          key: npm-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: npm-${{ env.cache-name }}
+      - name: Run tests
+        run: npm test
+      
 
   code-analysis:
-    needs: [build, test]
+    needs: [tests]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '${{ inputs.node-version }}'
-      - name: Download dependencies
-        uses: actions/download-artifact@v4
+      - name: Restore Cache
+        uses: actions/cache@v3
+        id: restore-cache
+        env:
+          cache-name: cache-node-modules
         with:
-          name: deps
           path: node_modules
-      - name: Run lint
+          key: npm-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: npm-${{ env.cache-name }}
+      - name: Run Code Analysis
         run: npm run lint
