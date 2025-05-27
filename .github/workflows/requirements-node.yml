@@ -7,6 +7,16 @@ on:
         required: true
         default: "22"
         type: string
+      project-type:
+        description: "Type of Node.js project (e.g., library, application)"
+        required: true
+        default: "library"
+        type: string
+      package-file:
+        description: "Path to the package file (e.g., package.json)"
+        required: true
+        default: "./package.json"
+        type: string
 
 jobs:
   dependencies:
@@ -56,6 +66,30 @@ jobs:
           restore-keys: npm-${{ env.cache-name }}
       - name: Run tests
         run: npm test
+
+  # Crear un job que verifique la version de package.json con la del ultimo release
+  validate-package-version:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '${{ inputs.node-version }}'
+      - name: Validate package version
+        run: |
+          current_version=$(node -p "require('${{ inputs.package-file }}').version")
+          latest_release=$(npm view $(node -p "require('${{ inputs.package-file }}').name") version)
+          if [ "$current_version" != "$latest_release" ]; then
+            echo "Current version ($current_version) does not match latest release ($latest_release)"
+            exit 1
+          else
+            echo "Version check passed: $current_version matches latest release $latest_release"
+          fi
       
   code-analysis:
     needs: [tests]
