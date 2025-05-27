@@ -82,8 +82,8 @@ jobs:
       - name: Validate package version
         run: |
           current_version=$(jq -r '.version' '${{ inputs.package-file }}')
-          latest_release=$(npm view $(jq -r '.name' '${{ inputs.package-file }}') version)
           echo "Current version: $current_version"
+          latest_release=$(npm view $(jq -r '.name' '${{ inputs.package-file }}') version)
           echo "Latest release version: $latest_release"
       
   code-analysis:
