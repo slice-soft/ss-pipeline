@@ -30,6 +30,7 @@ jobs:
           key: npm-${{ env.cache-name}}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: npm-${{ env.cache-name }}
       - name: Install dependencies
+        if: steps.restore-cache.outputs.cache-hit != 'true'
         run: npm ci
 
   tests:
