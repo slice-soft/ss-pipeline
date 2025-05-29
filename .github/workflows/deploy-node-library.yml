@@ -81,6 +81,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.save-folder }}
+          path: ${{ inputs.save-folder }}
 
       - name: Get Version from Package File
         id: get-version
