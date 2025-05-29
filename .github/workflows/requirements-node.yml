@@ -8,9 +8,8 @@ on:
         default: "22"
         type: string
       project-type:
-        description: "Type of Node.js project (e.g., library, application)"
+        description: "Type of Node.js project (e.g., library, frontend, backend)"
         required: true
-        default: "library"
         type: string
       package-file:
         description: "Path to the package file (e.g., package.json)"
@@ -86,7 +85,8 @@ jobs:
           echo "@${{ github.repository_owner }}:registry=https://npm.pkg.github.com/" > ~/.npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
           echo "always-auth=true" >> ~/.npmrc
-      - name: Validate package version
+      - name: Validate new version
+        if: ${{ inputs.project-type == 'library' }}
         run: |
           current_version=$(jq -r '.version' '${{ inputs.package-file }}')
           echo "Current version: $current_version"
