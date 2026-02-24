@@ -1,0 +1,20 @@
+name: CI Go
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        type: string
+        default: "1.21"
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+          cache: true
+      - run: go mod download
+      - run: go vet ./...
+      - run: go test ./... -cover
+      - run: go build ./...
