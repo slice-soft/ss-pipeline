@@ -89,4 +89,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          args: -Dsonar.host.url=${{ steps.config.outputs.host }}
+          args: |
+            -Dsonar.host.url=${{ steps.config.outputs.host }}
+            -Dsonar.scm.provider=git
+            -Dsonar.pullrequest.provider=github
+            -Dsonar.pullrequest.github.repository=${{ github.repository }}
