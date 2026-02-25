@@ -6,5 +6,5 @@ on:
       - main
 jobs:
   validate-label:
-    uses: ./.github/workflows/validate-pr.yml
+    uses: slice-soft/ss-pipeline/.github/workflows/validate-pr.yml@v0
     secrets: inherit

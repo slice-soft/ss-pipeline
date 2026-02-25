@@ -55,6 +55,6 @@ jobs:
     name: sonar
     needs: test
     if: ${{ secrets.SONAR_TOKEN != '' }}
-    uses: ./.github/workflows/sonar.yml
+    uses: slice-soft/ss-pipeline/.github/workflows/sonar.yml@v0
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

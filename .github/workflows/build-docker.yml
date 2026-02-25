@@ -30,7 +30,7 @@ env:
 
 jobs:
   linguist-analysis:
-    uses: ./.github/workflows/analyze-code.yml
+    uses: slice-soft/ss-pipeline/.github/workflows/analyze-code.yml@v0
     with:
       workdir: .
     secrets: inherit
