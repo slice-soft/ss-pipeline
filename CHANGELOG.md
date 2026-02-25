@@ -1,3 +1,12 @@
+# [0.6.0](https://github.com/slice-soft/ss-pipeline/compare/v0.5.0...v0.6.0) (2026-02-25)
+
+
+### Features
+
+* standardize job names in CI Go workflow ([27c39e0](https://github.com/slice-soft/ss-pipeline/commit/27c39e084b85bf90caef8ed63d26d84eed386758))
+
+
+
 # [0.5.0](https://github.com/slice-soft/ss-pipeline/compare/v0.4.5...v0.5.0) (2026-02-25)
 
 
@@ -32,15 +41,6 @@
 ### Bug Fixes
 
 * update release action to use correct tag output ([fc0e8c0](https://github.com/slice-soft/ss-pipeline/commit/fc0e8c0f363dd782fc2acf3172e7730d8529ae62))
-
-
-
-## [0.4.2](https://github.com/slice-soft/ss-pipeline/compare/v0.4.1...v0.4.2) (2026-02-25)
-
-
-### Bug Fixes
-
-* update release action to use release-version tag instead of tag ([c6db28c](https://github.com/slice-soft/ss-pipeline/commit/c6db28c5039a05a1a8ae73e2914f19e91c577a92))
 
 
 
