@@ -91,6 +91,5 @@ jobs:
         with:
           args: |
             -Dsonar.host.url=${{ steps.config.outputs.host }}
-            -Dsonar.scm.provider=git
             -Dsonar.pullrequest.provider=github
             -Dsonar.pullrequest.github.repository=${{ github.repository }}
