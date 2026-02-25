@@ -1,3 +1,12 @@
+## [0.7.2](https://github.com/slice-soft/ss-pipeline/compare/v0.7.1...v0.7.2) (2026-02-25)
+
+
+### Bug Fixes
+
+* remove unnecessary SCM provider parameter from SonarCloud Scan ([#44](https://github.com/slice-soft/ss-pipeline/issues/44)) ([7e2702c](https://github.com/slice-soft/ss-pipeline/commit/7e2702cf34e754005210477369f301ea49a8fab6))
+
+
+
 ## [0.7.1](https://github.com/slice-soft/ss-pipeline/compare/v0.7.0...v0.7.1) (2026-02-25)
 
 
@@ -36,15 +45,6 @@
 ### Features
 
 * standardize job names in CI Go workflow ([27c39e0](https://github.com/slice-soft/ss-pipeline/commit/27c39e084b85bf90caef8ed63d26d84eed386758))
-
-
-
-# [0.5.0](https://github.com/slice-soft/ss-pipeline/compare/v0.4.5...v0.5.0) (2026-02-25)
-
-
-### Features
-
-* add Node.js CI workflow with dependencies, tests, and linting steps ([ff973ae](https://github.com/slice-soft/ss-pipeline/commit/ff973ae3520bd5729a5a5bfa8aca4c9b05732737))
 
 
 
