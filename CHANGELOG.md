@@ -1,3 +1,12 @@
+## [0.4.3](https://github.com/slice-soft/ss-pipeline/compare/v0.4.2...v0.4.3) (2026-02-25)
+
+
+### Bug Fixes
+
+* update release action to use correct tag output ([fc0e8c0](https://github.com/slice-soft/ss-pipeline/commit/fc0e8c0f363dd782fc2acf3172e7730d8529ae62))
+
+
+
 ## [0.4.2](https://github.com/slice-soft/ss-pipeline/compare/v0.4.1...v0.4.2) (2026-02-25)
 
 
