@@ -16,6 +16,11 @@ on:
         type: string
         required: false
         default: "coverage"
+      run-sonar:
+        description: "Ejecutar análisis de Sonar"
+        type: boolean
+        required: false
+        default: false          
     secrets:
       SONAR_TOKEN:
         required: false
@@ -54,7 +59,7 @@ jobs:
   sonar:
     name: sonar
     needs: test
-    if: ${{ secrets.SONAR_TOKEN != '' }}
+    if: ${{ inputs.run-sonar }}
     uses: slice-soft/ss-pipeline/.github/workflows/sonar.yml@v0
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
