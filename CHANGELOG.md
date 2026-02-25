@@ -1,3 +1,12 @@
+# [0.5.0](https://github.com/slice-soft/ss-pipeline/compare/v0.4.5...v0.5.0) (2026-02-25)
+
+
+### Features
+
+* add Node.js CI workflow with dependencies, tests, and linting steps ([ff973ae](https://github.com/slice-soft/ss-pipeline/commit/ff973ae3520bd5729a5a5bfa8aca4c9b05732737))
+
+
+
 ## [0.4.5](https://github.com/slice-soft/ss-pipeline/compare/v0.4.4...v0.4.5) (2026-02-25)
 
 
@@ -32,15 +41,6 @@
 ### Bug Fixes
 
 * update release action to use release-version tag instead of tag ([c6db28c](https://github.com/slice-soft/ss-pipeline/commit/c6db28c5039a05a1a8ae73e2914f19e91c577a92))
-
-
-
-## [0.4.1](https://github.com/slice-soft/ss-pipeline/compare/v0.4.0...v0.4.1) (2026-02-25)
-
-
-### Bug Fixes
-
-* update release pipeline to trigger on push to main instead of pull request ([8b60ca8](https://github.com/slice-soft/ss-pipeline/commit/8b60ca8c623c8f6dbb66d072dc362b953b8a56a6))
 
 
 
