@@ -1,0 +1,138 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+*.swp
+*.swo
+*~
+
+# Linux
+.directory
+.Trash-*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.code-workspace
+.sublime-project
+.sublime-workspace
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.c9/
+*.launch
+.settingspath
+.metadata
+.recommenders/
+
+# npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Go
+*.out
+*.a
+*.so
+vendor/
+go.sum
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Artifacts
+artifact-reports/
+artifacts/
+*.jar
+*.zip
+*.tar.gz
+
+# Logs
+logs/
+*.log
+test-results/
+
+# Temporary files
+.cache/
+.tmp/
+temp/
+tmp/
+*.temp
+*.bak
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# GitHub Actions
+.github/workflows/*.local.yml
+
+# Sensitive files (backup - don't store credentials)
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+
+# SSH
+.ssh/
+known_hosts
+
+# Misc
+.cache
+.parcel-cache
+dist/
+build/
+coverage/
+.nyc_output/
