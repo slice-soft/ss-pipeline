@@ -1,0 +1,92 @@
+name: Sonar Analysis
+
+on:
+  workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        required: true
+
+jobs:
+  sonar:
+    name: Sonar Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Read pipeline config
+        id: config
+        run: |
+          if [ ! -f .sonar-pipeline.yml ]; then
+            echo "⚠️ .sonar-pipeline.yml not found, using defaults"
+            echo "host=https://sonarcloud.io" >> $GITHUB_OUTPUT
+            echo "create=true"               >> $GITHUB_OUTPUT
+            echo "artifact=coverage"         >> $GITHUB_OUTPUT
+          else
+            HOST=$(yq '.host-url // "https://sonarcloud.io"' .sonar-pipeline.yml)
+            CREATE=$(yq '.create-project // true' .sonar-pipeline.yml)
+            ARTIFACT=$(yq '.coverage-artifact-name // "coverage"' .sonar-pipeline.yml)
+            echo "host=$HOST"       >> $GITHUB_OUTPUT
+            echo "create=$CREATE"   >> $GITHUB_OUTPUT
+            echo "artifact=$ARTIFACT" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check sonar-project.properties
+        run: |
+          if [ ! -f sonar-project.properties ]; then
+            echo "❌ sonar-project.properties not found"
+            exit 1
+          fi
+          echo "✅ sonar-project.properties found"
+
+      - name: Extract project metadata
+        id: props
+        run: |
+          get_prop() {
+            grep "^$1" sonar-project.properties | cut -d'=' -f2- | tr -d ' '
+          }
+          echo "project_key=$(get_prop sonar.projectKey)"   >> $GITHUB_OUTPUT
+          echo "project_name=$(get_prop sonar.projectName)" >> $GITHUB_OUTPUT
+          echo "org=$(get_prop sonar.organization)"         >> $GITHUB_OUTPUT
+
+      - name: Download coverage artifact
+        if: steps.config.outputs.artifact != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.config.outputs.artifact }}
+        continue-on-error: true
+
+      - name: Create project if not exists
+        if: steps.config.outputs.create == 'true'
+        continue-on-error: true
+        run: |
+          HTTP_CODE=$(curl -s -o /tmp/sonar_create.json -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" \
+            "${{ steps.config.outputs.host }}/api/projects/create" \
+            -d "name=${{ steps.props.outputs.project_name }}" \
+            -d "project=${{ steps.props.outputs.project_key }}" \
+            -d "organization=${{ steps.props.outputs.org }}")
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Project created"
+          elif [ "$HTTP_CODE" = "400" ]; then
+            echo "ℹ️ Project already exists"
+          else
+            echo "⚠️ Response: $HTTP_CODE"
+            cat /tmp/sonar_create.json
+          fi
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: -Dsonar.host.url=${{ steps.config.outputs.host }}

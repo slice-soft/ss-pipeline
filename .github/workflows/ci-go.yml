@@ -1,20 +1,60 @@
 name: CI Go
+
 on:
   workflow_call:
     inputs:
       go-version:
         type: string
         default: "1.21"
+      test-command:
+        description: "Custom test command (default: 'go test ./... -coverprofile=coverage.out -covermode=atomic')"
+        type: string
+        required: false
+        default: "go test ./... -coverprofile=coverage.out -covermode=atomic"
+      coverage-artifact-name:
+        description: "Nombre del artifact de coverage (dejar vacío si no aplica)"
+        type: string
+        required: false
+        default: "coverage"
+    secrets:
+      SONAR_TOKEN:
+        required: false
+
 jobs:
-  ci:
+  test:
+    name: Test & Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ inputs.go-version }}
           cache: true
-      - run: go mod download
-      - run: go vet ./...
-      - run: go test ./... -cover
-      - run: go build ./...
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test with coverage
+        run: ${{ inputs.test-command }}
+
+      - name: Build
+        run: go build ./...
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.coverage-artifact-name }}
+          path: coverage.out
+          retention-days: 1
+
+  sonar:
+    name: Sonar Analysis
+    needs: test
+    if: ${{ secrets.SONAR_TOKEN != '' }}
+    uses: ./.github/workflows/sonar.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
