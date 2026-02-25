@@ -41,14 +41,20 @@ jobs:
       - name: Extract Major Version
         run: echo "major_version=$(echo ${{ steps.tag.outputs.tag }} | cut -d. -f1)" >> $GITHUB_ENV
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.tag.outputs.tag }}
-          name: ${{ steps.tag.outputs.tag }}
-          body: ${{ steps.changelog.outputs.release_notes }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: debug
+        run: |
+          echo "Tag: ${{ steps.tag.outputs.tag }}"
+          echo "Release Notes: ${{ steps.changelog.outputs.release_notes }}"
+          echo "Major Version: ${{ env.major_version }}"
+
+      # - name: Create Release
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     tag_name: ${{ steps.tag.outputs.tag }}
+      #     name: ${{ steps.tag.outputs.tag }}
+      #     body: ${{ steps.changelog.outputs.release_notes }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update Major Tag
         run: |
