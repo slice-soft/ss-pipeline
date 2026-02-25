@@ -1,15 +1,14 @@
 name: Release Pipeline
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
     branches:
       - main
 
-jobs:
+permissions:
+  contents: write
 
+jobs:
   release-pipeline:
-    if: github.event.pull_request.merged == true
     uses: ./.github/workflows/create-release.yml
     secrets: inherit
