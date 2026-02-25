@@ -39,7 +39,7 @@ on:
 
 jobs:
   ci:
-    uses: slice-soft/ss-pipeline/.github/workflows/ci-go.yml@main
+    uses: slice-soft/ss-pipeline/.github/workflows/ci-go.yml@v0
     with:
       go-version: "1.21"
 ```
@@ -71,7 +71,7 @@ on:
 
 jobs:
   ci:
-    uses: slice-soft/ss-pipeline/.github/workflows/ci-node.yml@main
+    uses: slice-soft/ss-pipeline/.github/workflows/ci-node.yml@v0
     with:
       node-version: "22"
 ```
@@ -101,7 +101,7 @@ on:
 
 jobs:
   validate:
-    uses: slice-soft/ss-pipeline/.github/workflows/validate-pr.yml@main
+    uses: slice-soft/ss-pipeline/.github/workflows/validate-pr.yml@v0
 ```
 
 ---
@@ -130,7 +130,7 @@ on:
 
 jobs:
   analyze:
-    uses: slice-soft/ss-pipeline/.github/workflows/analyze-code.yml@main
+    uses: slice-soft/ss-pipeline/.github/workflows/analyze-code.yml@v0
     with:
       workdir: "."
 ```
@@ -166,7 +166,7 @@ permissions:
 
 jobs:
   release:
-    uses: slice-soft/ss-pipeline/.github/workflows/create-release.yml@main
+    uses: slice-soft/ss-pipeline/.github/workflows/create-release.yml@v0
 ```
 
 ---
@@ -201,7 +201,7 @@ on:
 
 jobs:
   build:
-    uses: slice-soft/ss-pipeline/.github/workflows/build-docker.yml@main
+    uses: slice-soft/ss-pipeline/.github/workflows/build-docker.yml@v0
     with:
       workdir: "."
       dockerfile: "Dockerfile"
@@ -229,10 +229,10 @@ on:
 
 jobs:
   validate:
-    uses: slice-soft/ss-pipeline/.github/workflows/validate-pr.yml@main
+    uses: slice-soft/ss-pipeline/.github/workflows/validate-pr.yml@v0
     
   test-go:
-    uses: slice-soft/ss-pipeline/.github/workflows/ci-go.yml@main
+    uses: slice-soft/ss-pipeline/.github/workflows/ci-go.yml@v0
     with:
       go-version: "1.21"
 ```
