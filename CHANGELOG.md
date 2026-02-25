@@ -1,3 +1,12 @@
+## [0.4.5](https://github.com/slice-soft/ss-pipeline/compare/v0.4.4...v0.4.5) (2026-02-25)
+
+
+### Bug Fixes
+
+* add debug information for tag output in release workflow ([d81638c](https://github.com/slice-soft/ss-pipeline/commit/d81638c09ff8124d0dff32362b9d40554162ad45))
+
+
+
 ## [0.4.4](https://github.com/slice-soft/ss-pipeline/compare/v0.4.3...v0.4.4) (2026-02-25)
 
 
@@ -32,11 +41,6 @@
 ### Bug Fixes
 
 * update release pipeline to trigger on push to main instead of pull request ([8b60ca8](https://github.com/slice-soft/ss-pipeline/commit/8b60ca8c623c8f6dbb66d072dc362b953b8a56a6))
-
-
-### Features
-
-* add automatic changelog and release notes generation ([99b3ec1](https://github.com/slice-soft/ss-pipeline/commit/99b3ec1403b41a1fe1a21909177650f63053d2cc))
 
 
 
