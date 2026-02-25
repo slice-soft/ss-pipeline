@@ -22,7 +22,7 @@ on:
 
 jobs:
   test:
-    name: Test & Build
+    name: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,7 +52,7 @@ jobs:
           retention-days: 1
 
   sonar:
-    name: Sonar Analysis
+    name: sonar
     needs: test
     if: ${{ secrets.SONAR_TOKEN != '' }}
     uses: ./.github/workflows/sonar.yml
