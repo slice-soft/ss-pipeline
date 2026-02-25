@@ -1,3 +1,12 @@
+## [0.7.1](https://github.com/slice-soft/ss-pipeline/compare/v0.7.0...v0.7.1) (2026-02-25)
+
+
+### Bug Fixes
+
+* enhance SonarCloud Scan with additional SCM and pull request parameters ([9c68ec9](https://github.com/slice-soft/ss-pipeline/commit/9c68ec981468b1e2bc516ac84fabbb53e82d7446))
+
+
+
 # [0.7.0](https://github.com/slice-soft/ss-pipeline/compare/v0.6.1...v0.7.0) (2026-02-25)
 
 
@@ -36,15 +45,6 @@
 ### Features
 
 * add Node.js CI workflow with dependencies, tests, and linting steps ([ff973ae](https://github.com/slice-soft/ss-pipeline/commit/ff973ae3520bd5729a5a5bfa8aca4c9b05732737))
-
-
-
-## [0.4.5](https://github.com/slice-soft/ss-pipeline/compare/v0.4.4...v0.4.5) (2026-02-25)
-
-
-### Bug Fixes
-
-* add debug information for tag output in release workflow ([d81638c](https://github.com/slice-soft/ss-pipeline/commit/d81638c09ff8124d0dff32362b9d40554162ad45))
 
 
 
