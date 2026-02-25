@@ -1,3 +1,13 @@
+## [0.4.4](https://github.com/slice-soft/ss-pipeline/compare/v0.4.3...v0.4.4) (2026-02-25)
+
+
+### Bug Fixes
+
+* remove unnecessary pull request event types from CI workflow ([51bdb71](https://github.com/slice-soft/ss-pipeline/commit/51bdb71fe56b52353fc3741c317a54e5470eae7b))
+* restore pull request event types in CI workflow ([05a0c9a](https://github.com/slice-soft/ss-pipeline/commit/05a0c9a634a0c0932233ea0ec11d8c431d303ad9))
+
+
+
 ## [0.4.3](https://github.com/slice-soft/ss-pipeline/compare/v0.4.2...v0.4.3) (2026-02-25)
 
 
