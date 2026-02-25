@@ -1,3 +1,12 @@
+# [0.7.0](https://github.com/slice-soft/ss-pipeline/compare/v0.6.1...v0.7.0) (2026-02-25)
+
+
+### Features
+
+* add run-sonar input to CI Go workflow for conditional Sonar analysis ([15522c6](https://github.com/slice-soft/ss-pipeline/commit/15522c644c039fc00be418200b5411086fb18294))
+
+
+
 ## [0.6.1](https://github.com/slice-soft/ss-pipeline/compare/v0.6.0...v0.6.1) (2026-02-25)
 
 
@@ -36,16 +45,6 @@
 ### Bug Fixes
 
 * add debug information for tag output in release workflow ([d81638c](https://github.com/slice-soft/ss-pipeline/commit/d81638c09ff8124d0dff32362b9d40554162ad45))
-
-
-
-## [0.4.4](https://github.com/slice-soft/ss-pipeline/compare/v0.4.3...v0.4.4) (2026-02-25)
-
-
-### Bug Fixes
-
-* remove unnecessary pull request event types from CI workflow ([51bdb71](https://github.com/slice-soft/ss-pipeline/commit/51bdb71fe56b52353fc3741c317a54e5470eae7b))
-* restore pull request event types in CI workflow ([05a0c9a](https://github.com/slice-soft/ss-pipeline/commit/05a0c9a634a0c0932233ea0ec11d8c431d303ad9))
 
 
 
