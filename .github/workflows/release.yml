@@ -10,5 +10,5 @@ permissions:
 
 jobs:
   release-pipeline:
-    uses: slice-soft/ss-pipeline/.github/workflows/create-release.yml@v0
+    uses: ./.github/workflows/create-release.yml
     secrets: inherit
