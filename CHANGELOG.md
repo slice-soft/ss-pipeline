@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.9.1](https://github.com/slice-soft/ss-pipeline/compare/v0.9.0...v0.9.1) (2026-02-26)
+
+
+### Bug Fixes
+
+* remove sonar and upgrade checkout ([#54](https://github.com/slice-soft/ss-pipeline/issues/54)) ([f965148](https://github.com/slice-soft/ss-pipeline/commit/f965148cb72fa2839d489650ce5eb137f14d6c35))
+
 ## [0.8.0](https://github.com/slice-soft/ss-pipeline/compare/v0.7.2...v0.8.0) (2026-02-26)
 
 
