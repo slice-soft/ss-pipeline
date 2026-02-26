@@ -2,15 +2,10 @@ name: Validate PR
 on:
   workflow_call:
 jobs:
-  check-label:
+  validate-title:
     runs-on: ubuntu-latest
     steps:
-      - name: Check semver label
-        run: |
-          labels='${{ toJson(github.event.pull_request.labels.*.name) }}'
-          if echo "$labels" | grep -qE '"patch"|"minor"|"major"'; then
-            echo "✅ Semver label found"
-          else
-            echo "❌ Add a label: patch, minor or major"
-            exit 1
-          fi
+      - name: Validate PR title (conventional commits)
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
