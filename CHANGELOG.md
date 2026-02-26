@@ -7,6 +7,17 @@
 
 
 
+## [0.8.0](https://github.com/slice-soft/ss-pipeline/compare/v0.7.2...v0.8.0) (2026-02-26)
+
+
+### Features
+
+* changelog and release notes ([#45](https://github.com/slice-soft/ss-pipeline/issues/45)) ([1164b30](https://github.com/slice-soft/ss-pipeline/commit/1164b3070c0b0839d677b4bcf2028ae677392644))
+* changelog and release notes ([#46](https://github.com/slice-soft/ss-pipeline/issues/46)) ([744c851](https://github.com/slice-soft/ss-pipeline/commit/744c851a39fdcb7ca8aec521b58e165208af3728))
+* changelog and release notes ([#47](https://github.com/slice-soft/ss-pipeline/issues/47)) ([fea68dc](https://github.com/slice-soft/ss-pipeline/commit/fea68dcdd60cac48347a0853825f5efd6ffb4c0d))
+* changelog and release notes ([#48](https://github.com/slice-soft/ss-pipeline/issues/48)) ([02c4ffa](https://github.com/slice-soft/ss-pipeline/commit/02c4ffa22d5296adffc7c54a20d31a381025bdd4))
+* changelog and release notes ([#49](https://github.com/slice-soft/ss-pipeline/issues/49)) ([c3e8c0c](https://github.com/slice-soft/ss-pipeline/commit/c3e8c0c37c3c5e2d5c0b61d62adee2a7c487e92d))
+
 ## [0.7.1](https://github.com/slice-soft/ss-pipeline/compare/v0.7.0...v0.7.1) (2026-02-25)
 
 
@@ -45,6 +56,3 @@
 ### Features
 
 * standardize job names in CI Go workflow ([27c39e0](https://github.com/slice-soft/ss-pipeline/commit/27c39e084b85bf90caef8ed63d26d84eed386758))
-
-
-
