@@ -7,6 +7,13 @@
 
 
 
+## [0.9.0](https://github.com/slice-soft/ss-pipeline/compare/v0.8.0...v0.9.0) (2026-02-26)
+
+
+### Features
+
+* add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
+
 ## [0.8.0](https://github.com/slice-soft/ss-pipeline/compare/v0.7.2...v0.8.0) (2026-02-26)
 
 
