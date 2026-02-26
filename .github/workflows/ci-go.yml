@@ -16,21 +16,13 @@ on:
         type: string
         required: false
         default: "coverage"
-      run-sonar:
-        description: "Ejecutar análisis de Sonar"
-        type: boolean
-        required: false
-        default: false          
-    secrets:
-      SONAR_TOKEN:
-        required: false
 
 jobs:
   test:
     name: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-go@v5
         with:
@@ -55,11 +47,3 @@ jobs:
           name: ${{ inputs.coverage-artifact-name }}
           path: coverage.out
           retention-days: 1
-
-  sonar:
-    name: sonar
-    needs: test
-    if: ${{ inputs.run-sonar }}
-    uses: slice-soft/ss-pipeline/.github/workflows/sonar.yml@v0
-    secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

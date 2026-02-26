@@ -1,12 +1,3 @@
-## [0.7.2](https://github.com/slice-soft/ss-pipeline/compare/v0.7.1...v0.7.2) (2026-02-25)
-
-
-### Bug Fixes
-
-* remove unnecessary SCM provider parameter from SonarCloud Scan ([#44](https://github.com/slice-soft/ss-pipeline/issues/44)) ([7e2702c](https://github.com/slice-soft/ss-pipeline/commit/7e2702cf34e754005210477369f301ea49a8fab6))
-
-
-
 ## [0.9.0](https://github.com/slice-soft/ss-pipeline/compare/v0.8.0...v0.9.0) (2026-02-26)
 
 
@@ -24,6 +15,14 @@
 * changelog and release notes ([#47](https://github.com/slice-soft/ss-pipeline/issues/47)) ([fea68dc](https://github.com/slice-soft/ss-pipeline/commit/fea68dcdd60cac48347a0853825f5efd6ffb4c0d))
 * changelog and release notes ([#48](https://github.com/slice-soft/ss-pipeline/issues/48)) ([02c4ffa](https://github.com/slice-soft/ss-pipeline/commit/02c4ffa22d5296adffc7c54a20d31a381025bdd4))
 * changelog and release notes ([#49](https://github.com/slice-soft/ss-pipeline/issues/49)) ([c3e8c0c](https://github.com/slice-soft/ss-pipeline/commit/c3e8c0c37c3c5e2d5c0b61d62adee2a7c487e92d))
+
+## [0.7.2](https://github.com/slice-soft/ss-pipeline/compare/v0.7.1...v0.7.2) (2026-02-25)
+
+
+### Bug Fixes
+
+* remove unnecessary SCM provider parameter from SonarCloud Scan ([#44](https://github.com/slice-soft/ss-pipeline/issues/44)) ([7e2702c](https://github.com/slice-soft/ss-pipeline/commit/7e2702cf34e754005210477369f301ea49a8fab6))
+
 
 ## [0.7.1](https://github.com/slice-soft/ss-pipeline/compare/v0.7.0...v0.7.1) (2026-02-25)
 
