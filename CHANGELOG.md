@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.10.1](https://github.com/slice-soft/ss-pipeline/compare/v0.10.0...v0.10.1) (2026-02-27)
+
+
+### Bug Fixes
+
+* send Homebrew tap token to GoReleaser ([#58](https://github.com/slice-soft/ss-pipeline/issues/58)) ([1a73901](https://github.com/slice-soft/ss-pipeline/commit/1a739016940303097b642e3e12b6ee3954c4699d))
+
 ## [0.10.0](https://github.com/slice-soft/ss-pipeline/compare/v0.9.1...v0.10.0) (2026-02-27)
 
 
