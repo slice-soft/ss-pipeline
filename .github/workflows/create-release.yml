@@ -2,6 +2,11 @@ name: Release
 
 on:
   workflow_call:
+    outputs:
+      release_created:
+        value: ${{ jobs.release-please.outputs.release_created }}
+      tag_name:
+        value: ${{ jobs.release-please.outputs.tag_name }}
 
 permissions:
   contents: write
@@ -10,6 +15,9 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
 
     steps:
       - name: Run release-please

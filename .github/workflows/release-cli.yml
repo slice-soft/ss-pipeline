@@ -1,0 +1,41 @@
+name: Release CLI Binary
+
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        description: "Go version to use for building"
+        type: string
+        default: "1.22"
+      tag_name:
+        description: "The release tag to build (e.g. v1.0.0)"
+        type: string
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.tag_name }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+          cache: true
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
