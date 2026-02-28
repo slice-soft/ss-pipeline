@@ -1,4 +1,14 @@
-name: "Node.js Library CI"
+name: "Node.js CI"
+
+# Workflow reusable para CI en proyectos de Node.js.
+# Cachea dependencias, ejecuta tests y lint en paralelo con control de caché.
+# Soporta diferentes versiones de Node.js configurables.
+#
+# Uso típico:
+#   ci:
+#     uses: slice-soft/ss-pipeline/.github/workflows/ci-node.yml@v0
+#     with:
+#       node-version: "22"
 
 on:
   workflow_call:

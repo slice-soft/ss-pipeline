@@ -1,4 +1,8 @@
-name: Release Pipeline
+name: Release Pipeline - Automatic Release on Main
+
+# Workflow que se ejecuta automáticamente cuando se pushea a main.
+# Delega a create-release.yml para crear releases automáticas
+# con release-please basado en commits convencionales.
 
 on:
   push:

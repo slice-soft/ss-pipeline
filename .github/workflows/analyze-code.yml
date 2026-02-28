@@ -1,5 +1,15 @@
 name: Analyze Repository Languages with Linguist
 
+# Workflow reusable para analizar los lenguajes utilizados en el repositorio
+# usando GitHub Linguist. Genera un reporte que identifica los lenguajes
+# y sus proporciones en el código del proyecto.
+#
+# Uso típico:
+#   - analyze:
+#       uses: slice-soft/ss-pipeline/.github/workflows/analyze-code.yml@v0
+#       with:
+#         workdir: .
+
 on:
   workflow_call:
     inputs:

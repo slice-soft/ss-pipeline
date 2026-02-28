@@ -1,4 +1,9 @@
-name: CI
+name: Continuous Integration - Pull Request Validation
+
+# Workflow principal que valida PR cuando se abre, se etiquetan/desetan o se sincroniza.
+# Delega la validación al workflow validate-pr.yml.
+# Verifica que los títulos sigan Conventional Commits.
+
 on:
   pull_request:
     types: [opened, labeled, unlabeled, synchronize]
