@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.11.0](https://github.com/slice-soft/ss-pipeline/compare/v0.10.1...v0.11.0) (2026-02-28)
+
+
+### Features
+
+* add workflows to  system desing ([#60](https://github.com/slice-soft/ss-pipeline/issues/60)) ([5507fb6](https://github.com/slice-soft/ss-pipeline/commit/5507fb6d4743bca24b1832cec89eadbdc2366820))
+
 ## [0.10.1](https://github.com/slice-soft/ss-pipeline/compare/v0.10.0...v0.10.1) (2026-02-27)
 
 
