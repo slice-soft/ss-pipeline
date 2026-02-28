@@ -69,13 +69,11 @@ jobs:
           path: cdn-files/
 
       - name: Configure AWS CLI (R2 S3-compatible)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id:     ${{ secrets.R2_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          aws-region:            auto
+        run: |
+          aws configure set aws_access_key_id "${{ secrets.R2_ACCESS_KEY_ID }}"
+          aws configure set aws_secret_access_key "${{ secrets.R2_SECRET_ACCESS_KEY }}"
+          aws configure set default.region auto
 
-      # Normaliza la versión: elimina el prefijo 'v' si viene del tag de release-please
       - name: Normalize version
         id: ver
         run: echo "VALUE=${RAW#v}" >> $GITHUB_OUTPUT
