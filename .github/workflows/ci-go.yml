@@ -1,4 +1,15 @@
-name: CI Go
+name: CI Go - Test and Coverage
+
+# Workflow reusable para ejecutar tests en proyectos Go.
+# Descarga dependencias, ejecuta vet, tests con cobertura y build.
+# Soporta comandos de test personalizados y genera artefactos de coverage.
+#
+# Uso típico:
+#   test:
+#     uses: slice-soft/ss-pipeline/.github/workflows/ci-go.yml@v0
+#     with:
+#       go-version: "1.22"
+#       test-command: "go test ./... -coverprofile=coverage.out -covermode=atomic"
 
 on:
   workflow_call:

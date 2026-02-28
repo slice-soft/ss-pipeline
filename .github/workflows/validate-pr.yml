@@ -1,4 +1,9 @@
-name: Validate PR
+name: Validate PR - Conventional Commits
+
+# Workflow reusable que valida que los títulos de PR sigan Conventional Commits.
+# Requiere que el título tenga formato: type(scope): description
+# Types permitidos: feat, fix, chore, docs, refactor, perf, test, ci, build
+
 on:
   workflow_call:
 jobs:

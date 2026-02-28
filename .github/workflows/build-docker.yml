@@ -1,5 +1,20 @@
 name: Build Docker Image and Create Release
 
+# Workflow reusable para construir imágenes Docker y crear releases.
+# Ejecuta análisis de código con Linguist, compila la imagen Docker,
+# la sube a GitHub Container Registry y crea un release automático.
+#
+# Uso típico:
+#   build:
+#     uses: slice-soft/ss-pipeline/.github/workflows/build-docker.yml@v0
+#     with:
+#       workdir: .
+#       dockerfile: Dockerfile
+#       image_name: myapp
+#       version: ${{ needs.release.outputs.tag_name }}
+#     secrets:
+#       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
 on:
   workflow_call:
     inputs:
