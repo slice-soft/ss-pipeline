@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.11.2](https://github.com/slice-soft/ss-pipeline/compare/v0.11.1...v0.11.2) (2026-02-28)
+
+
+### Bug Fixes
+
+* remove 'v' prefix from versioned file uploads to Cloudflare R2 ([#64](https://github.com/slice-soft/ss-pipeline/issues/64)) ([9225dea](https://github.com/slice-soft/ss-pipeline/commit/9225dea60042665d85f4c17002e1673c1f86cd36))
+
 ## [0.11.1](https://github.com/slice-soft/ss-pipeline/compare/v0.11.0...v0.11.1) (2026-02-28)
 
 
