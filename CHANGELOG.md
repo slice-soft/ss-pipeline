@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.11.1](https://github.com/slice-soft/ss-pipeline/compare/v0.11.0...v0.11.1) (2026-02-28)
+
+
+### Bug Fixes
+
+* update AWS CLI configuration for R2 credentials ([#62](https://github.com/slice-soft/ss-pipeline/issues/62)) ([7d1fef4](https://github.com/slice-soft/ss-pipeline/commit/7d1fef4e3bb3e61612a4e4496d730fd473f86195))
+
 ## [0.11.0](https://github.com/slice-soft/ss-pipeline/compare/v0.10.1...v0.11.0) (2026-02-28)
 
 
