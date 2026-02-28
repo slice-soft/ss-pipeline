@@ -1,0 +1,133 @@
+name: Deploy to Cloudflare R2 CDN
+
+# Workflow reusable para subir archivos estáticos a un bucket de Cloudflare R2.
+#
+# El repo caller es responsable de:
+#   1. Construir y minificar los archivos
+#   2. Subirlos como artifact (actions/upload-artifact)
+#   3. Llamar a este workflow pasando el nombre del artifact y el destino
+#
+# Estructura que genera en R2:
+#   {destination-prefix}v{version}/   ← cache inmutable (1 año por defecto)
+#   {destination-prefix}latest/       ← cache corto (1h por defecto, opcional)
+
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        description: "Nombre del artifact que contiene los archivos a subir (creado con actions/upload-artifact en el job previo)"
+        type: string
+        required: true
+
+      destination-prefix:
+        description: "Prefijo en el bucket R2. Ej: 'design-system/', 'keel/docs/'. Debe terminar en '/'."
+        type: string
+        required: true
+
+      version:
+        description: "Versión con o sin 'v' (ej: 'v1.2.0' o '1.2.0'). El prefijo 'v' se normaliza automáticamente."
+        type: string
+        required: true
+
+      upload-latest:
+        description: "Si true, también sincroniza los archivos a {prefix}latest/ con cache corto."
+        type: boolean
+        default: true
+
+      versioned-cache-control:
+        description: "Cache-Control para los archivos versionados (inmutables)."
+        type: string
+        default: "public, max-age=31536000, immutable"
+
+      latest-cache-control:
+        description: "Cache-Control para los archivos en latest/."
+        type: string
+        default: "public, max-age=3600, must-revalidate"
+
+    secrets:
+      R2_ACCESS_KEY_ID:
+        required: true
+      R2_SECRET_ACCESS_KEY:
+        required: true
+      R2_ENDPOINT:
+        required: true
+      R2_BUCKET:
+        required: true
+      CDN_BASE_URL:
+        required: false
+
+jobs:
+  deploy:
+    name: Upload to R2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: cdn-files/
+
+      - name: Configure AWS CLI (R2 S3-compatible)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.R2_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          aws-region:            auto
+
+      # Normaliza la versión: elimina el prefijo 'v' si viene del tag de release-please
+      - name: Normalize version
+        id: ver
+        run: echo "VALUE=${RAW#v}" >> $GITHUB_OUTPUT
+        env:
+          RAW: ${{ inputs.version }}
+
+      - name: Upload versioned files
+        env:
+          BUCKET:    ${{ secrets.R2_BUCKET }}
+          ENDPOINT:  ${{ secrets.R2_ENDPOINT }}
+          PREFIX:    ${{ inputs.destination-prefix }}
+          VERSION:   ${{ steps.ver.outputs.VALUE }}
+          CACHE:     ${{ inputs.versioned-cache-control }}
+        run: |
+          aws s3 sync cdn-files/ \
+            s3://${BUCKET}/${PREFIX}v${VERSION}/ \
+            --endpoint-url "${ENDPOINT}" \
+            --cache-control "${CACHE}" \
+            --no-progress
+
+      - name: Upload latest files
+        if: inputs.upload-latest == true
+        env:
+          BUCKET:    ${{ secrets.R2_BUCKET }}
+          ENDPOINT:  ${{ secrets.R2_ENDPOINT }}
+          PREFIX:    ${{ inputs.destination-prefix }}
+          CACHE:     ${{ inputs.latest-cache-control }}
+        run: |
+          aws s3 sync cdn-files/ \
+            s3://${BUCKET}/${PREFIX}latest/ \
+            --endpoint-url "${ENDPOINT}" \
+            --cache-control "${CACHE}" \
+            --delete \
+            --no-progress
+
+      - name: Summary
+        env:
+          VERSION:  ${{ steps.ver.outputs.VALUE }}
+          PREFIX:   ${{ inputs.destination-prefix }}
+          CDN:      ${{ secrets.CDN_BASE_URL }}
+          LATEST:   ${{ inputs.upload-latest }}
+        run: |
+          echo "### CDN Deploy — ${PREFIX}v${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${CDN}" ]; then
+            echo "| Canal | Base URL |" >> $GITHUB_STEP_SUMMARY
+            echo "|-------|----------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Versionado (prod) | \`${CDN}/${PREFIX}v${VERSION}/\` |" >> $GITHUB_STEP_SUMMARY
+            if [ "${LATEST}" = "true" ]; then
+              echo "| Latest (dev) | \`${CDN}/${PREFIX}latest/\` |" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Archivos subidos:**" >> $GITHUB_STEP_SUMMARY
+          ls cdn-files/ | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
