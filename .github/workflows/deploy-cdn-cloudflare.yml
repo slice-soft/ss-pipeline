@@ -89,7 +89,7 @@ jobs:
           CACHE:     ${{ inputs.versioned-cache-control }}
         run: |
           aws s3 sync cdn-files/ \
-            s3://${BUCKET}/${PREFIX}v${VERSION}/ \
+            s3://${BUCKET}/${PREFIX}${VERSION}/ \
             --endpoint-url "${ENDPOINT}" \
             --cache-control "${CACHE}" \
             --no-progress
