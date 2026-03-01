@@ -1,42 +1,21 @@
-# SS Pipeline - Reusable GitHub Actions Workflows
+# ss-pipeline — Reusable GitHub Actions Workflows
 
-Una colección de workflows reutilizables de GitHub Actions para automatizar procesos CI/CD, análisis de código, construcción de imágenes Docker y gestión de releases.
+A collection of reusable GitHub Actions workflows for automating CI/CD, code analysis, Docker image builds, and release management across all SliceSoft repositories.
 
-## 📋 Descripción General
+---
 
-Este repositorio contiene workflows diseñados para ser reutilizados en otros proyectos a través de `workflow_call`. Incluye soluciones para:
+## Available Workflows
 
-- ✅ Integración continua (CI) para Go y Node.js
-- 🐳 Construcción de imágenes Docker
-- 📊 Análisis de lenguajes de código
-- 🏷️ Validación de etiquetas en PRs
-- 📝 Generación automática de CHANGELOG
-- 🚀 Gestión automatizada de releases
+### `ci-go.yml` — Go CI
 
-## 🔧 Workflows Disponibles
+Runs tests, static analysis, and build for Go projects.
 
-### 1. **CI Go** (`ci-go.yml`)
+**Inputs**
+- `go-version` (string, optional) — Go version to use. Default: `"1.21"`
 
-Workflow reusable para proyectos Go que ejecuta tests, análisis estático y construcción.
-
-#### Inputs
-- `go-version` (string, optional): Versión de Go a usar. Default: `"1.21"`
-
-#### Pasos
-- Configuración de Go con caché
-- Descarga de dependencias (`go mod download`)
-- Análisis estático (`go vet`)
-- Ejecución de tests con cobertura (`go test`)
-- Construcción del proyecto (`go build`)
-
-#### Ejemplo de uso
+**Steps:** Go setup with cache → `go mod download` → `go vet` → `go test` with coverage → `go build`
 
 ```yaml
-name: My Go Project CI
-on:
-  pull_request:
-    branches: [main]
-
 jobs:
   ci:
     uses: slice-soft/ss-pipeline/.github/workflows/ci-go.yml@v0
@@ -46,29 +25,16 @@ jobs:
 
 ---
 
-### 2. **CI Node.js** (`ci-node.yml`)
+### `ci-node.yml` — Node.js CI
 
-Workflow reusable para librerías y proyectos Node.js.
+Runs tests, linting, and build for Node.js projects.
 
-#### Inputs
-- `node-version` (string, optional): Versión de Node.js a usar. Default: `"22"`
+**Inputs**
+- `node-version` (string, optional) — Node.js version to use. Default: `"22"`
 
-#### Pasos
-- Configuración de Node.js
-- Caché inteligente de `node_modules`
-- Instalación de dependencias
-- Ejecución de tests
-- Linting (si está configurado)
-- Construcción (si está configurada)
-
-#### Ejemplo de uso
+**Steps:** Node.js setup → smart `node_modules` cache → install → test → lint → build
 
 ```yaml
-name: My Node.js Library CI
-on:
-  pull_request:
-    branches: [main]
-
 jobs:
   ci:
     uses: slice-soft/ss-pipeline/.github/workflows/ci-node.yml@v0
@@ -78,27 +44,36 @@ jobs:
 
 ---
 
-### 3. **Validate PR** (`validate-pr.yml`)
+### `build-node.yml` — Node.js Build + Artifact
 
-Workflow reusable que valida que los PRs tengan etiquetas semánticas de versionado (patch, minor, major).
+Checkout, `npm ci`, build, and upload artifact for downstream jobs.
 
-#### Requisitos
-- Al menos una de las siguientes etiquetas debe estar presente: `patch`, `minor`, `major`
-
-#### Pasos
-- Verifica la presencia de etiquetas semver
-- Falla si ninguna etiqueta está presente
-- Proporciona un mensaje claro del error
-
-#### Ejemplo de uso
+**Inputs**
+- `node-version` — Node.js version
+- `build-command` — Build command. Default: `npm run build`
+- `artifact-name` (required) — Name of the uploaded artifact
+- `artifact-path` — Path to upload. Default: `dist/`
+- `version` — Injected as `VERSION` env var
+- `retention-days` — Artifact retention days
 
 ```yaml
-name: Validate PR
-on:
-  pull_request:
-    types: [opened, labeled, unlabeled, synchronize]
-    branches: [main]
+jobs:
+  build:
+    uses: slice-soft/ss-pipeline/.github/workflows/build-node.yml@v0
+    with:
+      artifact-name: my-dist
+      version: ${{ needs.release.outputs.tag_name }}
+```
 
+---
+
+### `validate-pr.yml` — PR Label Validation
+
+Validates that PRs have a semver label before merging.
+
+**Required:** at least one of `patch`, `minor`, `major` must be present.
+
+```yaml
 jobs:
   validate:
     uses: slice-soft/ss-pipeline/.github/workflows/validate-pr.yml@v0
@@ -106,63 +81,14 @@ jobs:
 
 ---
 
-### 4. **Analyze Code** (`analyze-code.yml`)
+### `create-release.yml` — Automated Release
 
-Workflow reusable que utiliza GitHub Linguist para analizar los lenguajes presentes en el repositorio.
-
-#### Inputs
-- `workdir` (string, optional): Directorio de trabajo. Default: `"."`
-
-#### Pasos
-- Configuración de Ruby
-- Instalación de GitHub Linguist gem
-- Análisis de lenguajes del repositorio
-- Generación de reporte
-- Subida de artefacto
-
-#### Ejemplo de uso
+Generates a CHANGELOG from Conventional Commits, creates a version tag, and publishes a GitHub Release using `release-please`.
 
 ```yaml
-name: Analyze Repository
-on:
-  push:
-    branches: [main]
-
-jobs:
-  analyze:
-    uses: slice-soft/ss-pipeline/.github/workflows/analyze-code.yml@v0
-    with:
-      workdir: "."
-```
-
----
-
-### 5. **Create Release** (`create-release.yml`)
-
-Workflow reusable que genera automáticamente un CHANGELOG, crea un tag de versión y publica un release en GitHub.
-
-#### Características
-- Genera CHANGELOG según [Conventional Commits](https://www.conventionalcommits.org/)
-- Crea automáticamente tags de versión semántica (semver)
-- Crea un release en GitHub con el CHANGELOG
-- Actualiza el tag major para facilitar referencias
-
-#### Pasos
-- Genera CHANGELOG y versión usando Conventional Commits
-- Extrae la versión major del tag
-- Crea un release en GitHub
-- Actualiza el tag de versión major
-
-#### Ejemplo de uso
-
-```yaml
-name: Release Pipeline
-on:
-  push:
-    branches: [main]
-
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   release:
@@ -171,200 +97,116 @@ jobs:
 
 ---
 
-### 6. **Build Docker** (`build-docker.yml`)
+### `deploy-cdn-cloudflare.yml` — CDN Deploy to Cloudflare R2
 
-Workflow reusable para construir y publicar imágenes Docker en GitHub Container Registry.
+Downloads an artifact and syncs it to a Cloudflare R2 bucket. Supports versioned (`v{version}/`) and `latest/` paths.
 
-#### Inputs
-- `workdir` (string, required): Directorio de trabajo
-- `dockerfile` (string, required): Ruta del Dockerfile
-- `image_name` (string, required): Nombre de la imagen Docker
-- `version` (string, required): Tag de versión para la imagen
+**Inputs**
+- `artifact-name` (required) — Artifact to download and deploy
+- `destination-prefix` — R2 path prefix (e.g. `design-system/`)
+- `version` — Version string (with or without `v`)
+- `upload-latest` — Also sync to `latest/`. Default: `true`
 
-#### Secrets
-- `SSH_PRIVATE_KEY` (required): Clave privada SSH para acceso a repositorios privados
-
-#### Características
-- Análisis de código con Linguist
-- Construcción con Docker BuildKit habilitado
-- Push a GitHub Container Registry
-- Firma de imágenes con Cosign
-
-#### Ejemplo de uso
+**Secrets required:** `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, `R2_BUCKET`, `CDN_BASE_URL`
 
 ```yaml
-name: Build Docker Image
-on:
-  push:
-    tags:
-      - 'v*'
-
 jobs:
-  build:
-    uses: slice-soft/ss-pipeline/.github/workflows/build-docker.yml@v0
+  deploy:
+    uses: slice-soft/ss-pipeline/.github/workflows/deploy-cdn-cloudflare.yml@v0
     with:
-      workdir: "."
-      dockerfile: "Dockerfile"
-      image_name: "my-app"
-      version: "1.0.0"
-    secrets:
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      artifact-name: cdn-dist
+      destination-prefix: design-system/
+      version: ${{ needs.release.outputs.tag_name }}
+    secrets: inherit
 ```
 
 ---
 
-## 🚀 Uso en Tus Repositorios
+### `analyze-code.yml` — Code Analysis
 
-### Paso 1: Agregar un workflow que use los workflows reusables
+Uses GitHub Linguist to analyze the languages present in the repository and uploads a report artifact.
 
-Crea un archivo en `.github/workflows/` en tu repositorio:
-
-```yaml
-name: CI Pipeline
-on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
-
-jobs:
-  validate:
-    uses: slice-soft/ss-pipeline/.github/workflows/validate-pr.yml@v0
-    
-  test-go:
-    uses: slice-soft/ss-pipeline/.github/workflows/ci-go.yml@v0
-    with:
-      go-version: "1.21"
-```
-
-### Paso 2: Configurar permisos
-
-Asegúrate de que tu repositorio tiene los permisos necesarios en `Settings > Actions > General`:
-
-- ✅ Actions permissions: "Allow all actions and reusable workflows"
-- ✅ Workflow permissions: "Read and write permissions"
-
-### Paso 3: Configurar secretos (si es necesario)
-
-Para workflows que requieren secretos (como `build-docker.yml`), agrega los secretos en:
-
-`Settings > Secrets and variables > Actions`
+**Inputs**
+- `workdir` (string, optional) — Working directory. Default: `"."`
 
 ---
 
-## 📋 Requisitos Previos
+### `build-docker.yml` — Docker Build & Push
 
-### Para CI Go
-- El proyecto debe tener un archivo `go.mod`
-- Tests en formato estándar de Go
+Builds and publishes a Docker image to GitHub Container Registry.
 
-### Para CI Node.js
-- El proyecto debe tener `package.json`
-- `package-lock.json` para reproducibilidad
+**Inputs**
+- `workdir` (required) — Working directory
+- `dockerfile` (required) — Dockerfile path
+- `image_name` (required) — Docker image name
+- `version` (required) — Version tag for the image
 
-### Para Create Release
-- Commits que sigan [Conventional Commits](https://www.conventionalcommits.org/)
-- Permisos de escritura en el repositorio
-
-### Para Build Docker
-- Dockerfile presente en la ruta especificada
-- GitHub Container Registry configurado
+**Secrets:** `SSH_PRIVATE_KEY` (required for private repo access during build)
 
 ---
 
-## 🔐 Secretos Requeridos
+## Requirements per workflow
 
-### `SSH_PRIVATE_KEY` (para build-docker.yml)
-
-Se usa para acceso a repositorios privados durante la construcción:
-
-```bash
-# Generar una clave SSH (si no tienes ya una)
-ssh-keygen -t ed25519 -f gh-action-key -N ""
-
-# Agregar a SSH_PRIVATE_KEY secret en GitHub
-cat gh-action-key | base64
-```
+| Workflow | Requirement |
+|---|---|
+| `ci-go.yml` | `go.mod` present, standard Go tests |
+| `ci-node.yml` | `package.json` + `package-lock.json` |
+| `build-node.yml` | `package.json` + `package-lock.json` |
+| `create-release.yml` | Conventional Commits, write permissions |
+| `deploy-cdn-cloudflare.yml` | R2 secrets configured, artifact uploaded |
+| `build-docker.yml` | Dockerfile, GitHub Container Registry configured |
 
 ---
 
-## 📝 Convenciones de Commits
+## Repository Permissions
 
-Para que el workflow `create-release.yml` funcione correctamente, sigue las convenciones de commits:
+Ensure your repository has the correct settings under `Settings > Actions > General`:
+
+- Actions permissions: **Allow all actions and reusable workflows**
+- Workflow permissions: **Read and write permissions**
+
+---
+
+## Commit Conventions
+
+All SliceSoft repos follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
-feat: Nueva característica (MINOR)
-fix: Corrección de bug (PATCH)
-perf: Mejora de rendimiento (PATCH)
-docs: Cambios de documentación
-refactor: Refactorización sin cambio de funcionalidad
-test: Agregación o modificación de tests
-chore: Cambios en herramientas, configuración, etc.
+feat: new feature        → MINOR
+fix: bug fix             → PATCH
+feat!: breaking change   → MAJOR
+docs: documentation
+refactor: refactoring
+chore: tooling / config
+ci: CI/CD changes
 ```
 
-**Ejemplo:**
-```
-feat(auth): agregar autenticación de dos factores
+## Semver PR Labels
 
-BREAKING CHANGE: La API de login ha cambiado
-```
+The `validate-pr.yml` workflow requires one of:
 
----
-
-## 🏷️ Etiquetas Semánticas
-
-El workflow `validate-pr.yml` requiere una de las siguientes etiquetas en cada PR:
-
-| Etiqueta | Significado | Versión |
-|----------|-------------|---------|
-| `patch` | Correcciones de bugs | 1.0.x |
-| `minor` | Nuevas características | 1.x.0 |
-| `major` | Cambios incompatibles | x.0.0 |
+| Label | Meaning | Version impact |
+|---|---|---|
+| `patch` | Bug fix or small improvement | 1.0.**x** |
+| `minor` | New non-breaking feature | 1.**x**.0 |
+| `major` | Breaking change | **x**.0.0 |
 
 ---
 
-## 🐛 Troubleshooting
+## Contributing
 
-### El workflow de release no genera CHANGELOG
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for repository-specific rules.
+The base workflow, commit conventions, and community standards live in [ss-community](https://github.com/slice-soft/ss-community/blob/main/CONTRIBUTING.md).
 
-- Verifica que los commits sigan [Conventional Commits](https://www.conventionalcommits.org/)
-- Asegúrate de que no hay tags previos en el repositorio
+## Community
 
-### El build Docker falla con permisos SSH
-
-- Verifica que la clave SSH está correctamente codificada en base64
-- Asegúrate de que el host está agregado a `known_hosts`
-
-### El CI no usa el caché de dependencias
-
-- Verifica que `package-lock.json` (Node.js) o `go.sum` (Go) estén versionados
-- El hash del archivo debe ser determinístico
+| Document | |
+|---|---|
+| [CONTRIBUTING.md](https://github.com/slice-soft/ss-community/blob/main/CONTRIBUTING.md) | Workflow, commit conventions, and PR guidelines |
+| [GOVERNANCE.md](https://github.com/slice-soft/ss-community/blob/main/GOVERNANCE.md) | Decision-making, roles, and release process |
+| [CODE_OF_CONDUCT.md](https://github.com/slice-soft/ss-community/blob/main/CODE_OF_CONDUCT.md) | Community standards |
+| [SECURITY.md](https://github.com/slice-soft/ss-community/blob/main/SECURITY.md) | How to report vulnerabilities |
 
 ---
 
-## 📚 Recursos Adicionales
-
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [Reusable Workflows](https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_iduses)
-- [Conventional Commits](https://www.conventionalcommits.org/)
-- [Semantic Versioning](https://semver.org/)
-
----
-
-## 📄 Licencia
-
-Este proyecto es de código abierto y está disponible para uso en otros proyectos.
-
----
-
-## 🤝 Contribuciones
-
-Para contribuir mejoras a estos workflows, por favor:
-
-1. Crea un branch con tu cambio
-2. Asegúrate de etiquetar tu PR correctamente
-3. Los cambios serán validados antes de ser mergeados
-
----
-
-**Última actualización:** 25 de febrero de 2026
+SliceSoft — Colombia 💙
