@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.12.0](https://github.com/slice-soft/ss-pipeline/compare/v0.11.2...v0.12.0) (2026-03-13)
+
+
+### Features
+
+* add reusable Terraform Plan and Apply workflows ([#68](https://github.com/slice-soft/ss-pipeline/issues/68)) ([b43a388](https://github.com/slice-soft/ss-pipeline/commit/b43a3883ad28178811b109bbc019863d01a35568))
+
 ## [0.11.2](https://github.com/slice-soft/ss-pipeline/compare/v0.11.1...v0.11.2) (2026-02-28)
 
 
