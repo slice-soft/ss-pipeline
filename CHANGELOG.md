@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.12.1](https://github.com/slice-soft/ss-pipeline/compare/v0.12.0...v0.12.1) (2026-03-13)
+
+
+### Bug Fixes
+
+* add terrafrom reusable workflows ([#70](https://github.com/slice-soft/ss-pipeline/issues/70)) ([9bbc8ee](https://github.com/slice-soft/ss-pipeline/commit/9bbc8ee6b399351a23574a68c68ef30eb701057a))
+
 ## [0.12.0](https://github.com/slice-soft/ss-pipeline/compare/v0.11.2...v0.12.0) (2026-03-13)
 
 
