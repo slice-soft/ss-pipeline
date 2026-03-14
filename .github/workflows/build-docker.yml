@@ -1,10 +1,10 @@
 name: Build Docker Image and Create Release
 
-# Workflow reusable para construir imágenes Docker y crear releases.
-# Ejecuta análisis de código con Linguist, compila la imagen Docker,
-# la sube a GitHub Container Registry y crea un release automático.
+# Reusable workflow for building Docker images and creating releases.
+# Runs a Linguist code analysis, builds the Docker image,
+# pushes it to GitHub Container Registry, and creates an automatic release.
 #
-# Uso típico:
+# Typical usage:
 #   build:
 #     uses: slice-soft/ss-pipeline/.github/workflows/build-docker.yml@v0
 #     with:
@@ -66,7 +66,7 @@ jobs:
       - name: Set up SSH key for Docker secret
         id: setup_ssh
         run: |
-          # Crear archivo temporal con la clave privada
+          # Create a temporary file for the private key
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > id_rsa
           chmod 600 id_rsa
         shell: bash

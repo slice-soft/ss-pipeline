@@ -54,7 +54,7 @@ jobs:
           HEAD_SHA=$(echo $PR_DATA | jq -r '.head_sha')
 
           if [ "$PR_NUMBER" = "null" ] || [ -z "$PR_NUMBER" ]; then
-            echo "❌ No se encontró PR asociado al commit ${{ github.sha }}"
+            echo "❌ No PR associated with commit ${{ github.sha }} was found"
             exit 1
           fi
 
@@ -70,7 +70,7 @@ jobs:
         run: |
           set -euo pipefail
           PLAN_KEY="plans/${{ inputs.plan-prefix }}/pr-${{ steps.pr.outputs.PR_NUMBER }}/${{ steps.pr.outputs.HEAD_SHA }}.tfplan"
-          echo "📥 Descargando plan: ${PLAN_KEY}"
+          echo "📥 Downloading plan: ${PLAN_KEY}"
           aws s3 cp s3://${{ secrets.TF_R2_BUCKET }}/${PLAN_KEY} \
             ${{ inputs.working-directory }}/tfplan.binary \
             --region auto
@@ -114,7 +114,7 @@ jobs:
             const outputPath = path.join(process.env.WORKING_DIR, 'apply_output.txt');
             const output = fs.existsSync(outputPath)
               ? fs.readFileSync(outputPath, 'utf8')
-              : 'No se generó apply_output.txt. El fallo ocurrió antes del paso Terraform Apply.';
+              : 'apply_output.txt was not generated. The failure happened before the Terraform Apply step.';
             const maxLen = 60000;
             const truncated = output.length > maxLen
               ? output.substring(0, maxLen) + '\n\n... (truncated)'
@@ -122,17 +122,17 @@ jobs:
 
             const success = process.env.APPLY_OUTCOME === 'success';
             const icon = success ? '✅' : '❌';
-            const status = success ? 'aplicado exitosamente' : 'FALLÓ';
+            const status = success ? 'applied successfully' : 'FAILED';
 
             const body = [
               `## Terraform Apply — ${icon} ${status}`,
               '',
               `**PR:** #${process.env.PR_NUMBER}`,
-              `**Commit aplicado:** \`${process.env.HEAD_SHA}\``,
+              `**Applied commit:** \`${process.env.HEAD_SHA}\``,
               `**Merge commit:** \`${process.env.MERGE_SHA}\``,
               '',
               '<details>',
-              '<summary>Ver output del apply</summary>',
+              '<summary>View apply output</summary>',
               '',
               '```',
               truncated,

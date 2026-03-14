@@ -1,14 +1,14 @@
 name: Create Release - Release Please
 
-# Workflow reusable que ejecuta release-please para crear releases automáticas.
-# Genera changelog, actualiza versiones e crea tags del release.
-# También actualiza el major tag (ej: v1 siempre apunta a la última v1.x).
+# Reusable workflow that runs release-please to create automatic releases.
+# Generates the changelog, updates versions, and creates release tags.
+# Also updates the major tag (for example v1 always points to the latest v1.x).
 #
 # Outputs:
-#   release_created: true si se creó una release
-#   tag_name: el tag de la release creada
+#   release_created: true if a release was created
+#   tag_name: the tag of the created release
 #
-# Uso típico:
+# Typical usage:
 #   release:
 #     uses: slice-soft/ss-pipeline/.github/workflows/create-release.yml@v0
 
