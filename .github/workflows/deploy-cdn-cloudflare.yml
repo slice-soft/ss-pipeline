@@ -1,46 +1,46 @@
 name: Deploy to Cloudflare R2 CDN
 
-# Workflow reusable para subir archivos estáticos a un bucket de Cloudflare R2.
+# Reusable workflow for uploading static files to a Cloudflare R2 bucket.
 #
-# El repo caller es responsable de:
-#   1. Construir y minificar los archivos
-#   2. Subirlos como artifact (actions/upload-artifact)
-#   3. Llamar a este workflow pasando el nombre del artifact y el destino
+# The calling repository is responsible for:
+#   1. Building and minifying the files
+#   2. Uploading them as an artifact (actions/upload-artifact)
+#   3. Calling this workflow with the artifact name and destination
 #
-# Estructura que genera en R2:
-#   {destination-prefix}v{version}/   ← cache inmutable (1 año por defecto)
-#   {destination-prefix}latest/       ← cache corto (1h por defecto, opcional)
+# Structure generated in R2:
+#   {destination-prefix}v{version}/   ← immutable cache (1 year by default)
+#   {destination-prefix}latest/       ← short cache (1h by default, optional)
 
 on:
   workflow_call:
     inputs:
       artifact-name:
-        description: "Nombre del artifact que contiene los archivos a subir (creado con actions/upload-artifact en el job previo)"
+        description: "Artifact name containing the files to upload (created with actions/upload-artifact in the previous job)"
         type: string
         required: true
 
       destination-prefix:
-        description: "Prefijo en el bucket R2. Ej: 'design-system/', 'keel/docs/'. Debe terminar en '/'."
+        description: "Prefix in the R2 bucket. Example: 'design-system/', 'keel/docs/'. Must end with '/'."
         type: string
         required: true
 
       version:
-        description: "Versión con o sin 'v' (ej: 'v1.2.0' o '1.2.0'). El prefijo 'v' se normaliza automáticamente."
+        description: "Version with or without 'v' (for example 'v1.2.0' or '1.2.0'). The 'v' prefix is normalized automatically."
         type: string
         required: true
 
       upload-latest:
-        description: "Si true, también sincroniza los archivos a {prefix}latest/ con cache corto."
+        description: "If true, also syncs files to {prefix}latest/ with a short cache."
         type: boolean
         default: true
 
       versioned-cache-control:
-        description: "Cache-Control para los archivos versionados (inmutables)."
+        description: "Cache-Control for versioned (immutable) files."
         type: string
         default: "public, max-age=31536000, immutable"
 
       latest-cache-control:
-        description: "Cache-Control para los archivos en latest/."
+        description: "Cache-Control for files in latest/."
         type: string
         default: "public, max-age=3600, must-revalidate"
 

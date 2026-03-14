@@ -1,10 +1,10 @@
 name: Release CLI Binary - GoReleaser
 
-# Workflow reusable para compilar y distribuir binarios CLI en Go.
-# Usa GoReleaser para compilar para múltiples plataformas (Linux, macOS, Windows, etc.)
-# y publica los artefactos en la release de GitHub y Homebrew.
+# Reusable workflow to build and distribute Go CLI binaries.
+# Uses GoReleaser to build for multiple platforms (Linux, macOS, Windows, etc.)
+# and publishes artifacts to the GitHub release and Homebrew.
 #
-# Uso típico:
+# Typical usage:
 #   release-cli:
 #     uses: slice-soft/ss-pipeline/.github/workflows/release-cli.yml@v0
 #     with:

@@ -109,15 +109,15 @@ jobs:
               `**Commit:** \`${process.env.HEAD_SHA}\``,
               '',
               '<details>',
-              '<summary>📋 Ver plan completo</summary>',
+              '<summary>📋 View full plan</summary>',
               '',
               '```hcl',
               truncated,
               '```',
               '</details>',
               '',
-              '> Este plan será aplicado automáticamente al mergear el PR.',
-              '> Si haces nuevos commits, se generará un plan actualizado.',
+              '> This plan will be applied automatically when the PR is merged.',
+              '> If you push new commits, an updated plan will be generated.',
             ].join('\n');
 
             const comments = await github.rest.issues.listComments({

@@ -1,9 +1,9 @@
 name: Build Node.js Artifact
 
-# Workflow reusable para hacer build de proyectos Node.js y subir el resultado
-# como artifact para que jobs posteriores (deploy, release, etc.) lo consuman.
+# Reusable workflow to build Node.js projects and upload the result
+# as an artifact for downstream jobs (deploy, release, etc.).
 #
-# Uso típico:
+# Typical usage:
 #   build:
 #     uses: slice-soft/ss-pipeline/.github/workflows/build-node.yml@v0
 #     with:
@@ -14,32 +14,32 @@ on:
   workflow_call:
     inputs:
       node-version:
-        description: "Versión de Node.js"
+        description: "Node.js version"
         type: string
         default: "22"
 
       build-command:
-        description: "Comando de build a ejecutar"
+        description: "Build command to run"
         type: string
         default: "npm run build"
 
       artifact-name:
-        description: "Nombre del artifact que se sube con actions/upload-artifact"
+        description: "Artifact name uploaded with actions/upload-artifact"
         type: string
         required: true
 
       artifact-path:
-        description: "Directorio o patrón de archivos a incluir en el artifact"
+        description: "Directory or file pattern to include in the artifact"
         type: string
         default: "dist/"
 
       retention-days:
-        description: "Días de retención del artifact en GitHub"
+        description: "Artifact retention period in GitHub, in days"
         type: number
         default: 1
 
       version:
-        description: "Versión opcional (con o sin 'v'). Se inyecta como env var VERSION al build command."
+        description: "Optional version (with or without 'v'). Injected as the VERSION env var into the build command."
         type: string
         default: ""
 

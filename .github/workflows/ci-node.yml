@@ -1,10 +1,10 @@
 name: "Node.js CI"
 
-# Workflow reusable para CI en proyectos de Node.js.
-# Cachea dependencias, ejecuta tests y lint en paralelo con control de caché.
-# Soporta diferentes versiones de Node.js configurables.
+# Reusable workflow for CI in Node.js projects.
+# Caches dependencies and runs tests and lint in parallel with cache control.
+# Supports configurable Node.js versions.
 #
-# Uso típico:
+# Typical usage:
 #   ci:
 #     uses: slice-soft/ss-pipeline/.github/workflows/ci-node.yml@v0
 #     with:
