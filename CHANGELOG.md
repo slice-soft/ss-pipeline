@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.12.3](https://github.com/slice-soft/ss-pipeline/compare/v0.12.2...v0.12.3) (2026-03-14)
+
+
+### Bug Fixes
+
+* translate code ([#74](https://github.com/slice-soft/ss-pipeline/issues/74)) ([10e2a4e](https://github.com/slice-soft/ss-pipeline/commit/10e2a4ec13630f23848dc3de9f15e3e7ce68505d))
+
 ## [0.12.2](https://github.com/slice-soft/ss-pipeline/compare/v0.12.1...v0.12.2) (2026-03-14)
 
 
