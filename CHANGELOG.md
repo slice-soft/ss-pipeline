@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.12.2](https://github.com/slice-soft/ss-pipeline/compare/v0.12.1...v0.12.2) (2026-03-14)
+
+
+### Bug Fixes
+
+* workflow terrfaorm action ([#72](https://github.com/slice-soft/ss-pipeline/issues/72)) ([1730e3d](https://github.com/slice-soft/ss-pipeline/commit/1730e3d72244a67b661316a72b2214a504431eb4))
+
 ## [0.12.1](https://github.com/slice-soft/ss-pipeline/compare/v0.12.0...v0.12.1) (2026-03-13)
 
 
