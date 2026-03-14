@@ -54,17 +54,6 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         run: terraform validate
 
-      - name: Debug — verify GitHub token scope
-        env:
-          GH_TOKEN: ${{ secrets.TF_GITHUB_TOKEN }}
-        run: |
-          echo "=== Token identity ==="
-          gh api /user --jq '{login: .login}'
-          echo "=== Org membership ==="
-          gh api /user/memberships/orgs --jq '.[].organization.login' || echo "⚠️  No se pueden leer membresías de org"
-          echo "=== Repos visibles en slice-soft ==="
-          gh api /orgs/slice-soft/repos --jq '.[].name' | head -5 || echo "⚠️  No se pueden leer repos de slice-soft"
-
       - name: Terraform Plan
         id: plan
         working-directory: ${{ inputs.working-directory }}

@@ -47,6 +47,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.TF_GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           PR_DATA=$(gh api repos/${{ github.repository }}/commits/${{ github.sha }}/pulls \
             --jq '.[0] | {number: .number, head_sha: .head.sha}')
           PR_NUMBER=$(echo $PR_DATA | jq -r '.number')
@@ -67,6 +68,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_R2_SECRET_ACCESS_KEY }}
           AWS_ENDPOINT_URL_S3: ${{ secrets.TF_R2_ENDPOINT }}
         run: |
+          set -euo pipefail
           PLAN_KEY="plans/${{ inputs.plan-prefix }}/pr-${{ steps.pr.outputs.PR_NUMBER }}/${{ steps.pr.outputs.HEAD_SHA }}.tfplan"
           echo "📥 Descargando plan: ${PLAN_KEY}"
           aws s3 cp s3://${{ secrets.TF_R2_BUCKET }}/${PLAN_KEY} \
@@ -109,7 +111,10 @@ jobs:
             const fs = require('fs');
             const path = require('path');
 
-            const output = fs.readFileSync(path.join(process.env.WORKING_DIR, 'apply_output.txt'), 'utf8');
+            const outputPath = path.join(process.env.WORKING_DIR, 'apply_output.txt');
+            const output = fs.existsSync(outputPath)
+              ? fs.readFileSync(outputPath, 'utf8')
+              : 'No se generó apply_output.txt. El fallo ocurrió antes del paso Terraform Apply.';
             const maxLen = 60000;
             const truncated = output.length > maxLen
               ? output.substring(0, maxLen) + '\n\n... (truncated)'
