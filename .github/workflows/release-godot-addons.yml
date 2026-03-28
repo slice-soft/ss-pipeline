@@ -1,0 +1,73 @@
+name: Release Godot Addons
+
+# Reusable workflow that packages each Godot addon as an individual zip file
+# and attaches it to its corresponding GitHub Release.
+#
+# Designed for monorepo setups with independent per-addon versioning via release-please.
+# Versions and addon paths are read directly from .release-please-manifest.json —
+# no hardcoded list needed. Adding a new addon folder + manifest entry is enough.
+#
+# For each addon in the manifest:
+#   1. Derives the tag: {component}-v{version}  (e.g. ss-gameforge-toast-v1.3.0)
+#   2. Checks if that GitHub Release exists
+#   3. Checks if the zip is already attached (idempotent)
+#   4. If not: zips the addon folder and uploads it
+#
+# Each zip contains the addon folder at its root, ready to drop into addons/.
+#
+# Typical usage:
+#   release-addons:
+#     needs: release
+#     if: needs.release.outputs.releases_created == 'true'
+#     uses: slice-soft/ss-pipeline/.github/workflows/release-godot-addons.yml@v0
+#     secrets: inherit
+
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  release-addons:
+    name: Package and upload addons
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Package and upload each released addon
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p zips
+
+          while IFS= read -r addon_path; do
+            version=$(jq -r --arg p "$addon_path" '.[$p]' .release-please-manifest.json)
+            addon_name=$(basename "$addon_path")
+            tag="${addon_name}-v${version}"
+            zip_name="${addon_name}-v${version}.zip"
+
+            # Skip if no GitHub Release exists for this tag
+            release_tag=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json tagName -q .tagName 2>/dev/null || echo "")
+            if [ -z "$release_tag" ]; then
+              echo "No release found for $tag — skipping"
+              continue
+            fi
+
+            # Skip if zip is already attached (idempotent)
+            already_uploaded=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets \
+              -q ".assets[].name" 2>/dev/null | grep -c "^${zip_name}$" || echo "0")
+            if [ "$already_uploaded" -gt 0 ]; then
+              echo "Zip already uploaded for $tag — skipping"
+              continue
+            fi
+
+            echo "Packaging $addon_name @ v${version}..."
+            (cd "$(dirname "$addon_path")" && zip -r "${GITHUB_WORKSPACE}/zips/${zip_name}" "$(basename "$addon_path")")
+
+            gh release upload "$tag" "zips/${zip_name}" --repo "$GITHUB_REPOSITORY"
+            echo "Uploaded: ${zip_name} → ${tag}"
+
+          done < <(jq -r 'keys[]' .release-please-manifest.json)

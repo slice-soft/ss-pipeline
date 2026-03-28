@@ -5,8 +5,9 @@ name: Create Release - Release Please
 # Also updates the major tag (for example v1 always points to the latest v1.x).
 #
 # Outputs:
-#   release_created: true if a release was created
-#   tag_name: the tag of the created release
+#   release_created:  true if a single-package release was created
+#   releases_created: true if any release was created (monorepo mode)
+#   tag_name:         the tag of the created release (single-package only)
 #
 # Typical usage:
 #   release:
@@ -16,7 +17,11 @@ on:
   workflow_call:
     outputs:
       release_created:
+        description: "True if a single-package release was created"
         value: ${{ jobs.release-please.outputs.release_created }}
+      releases_created:
+        description: "True if any release was created (monorepo mode)"
+        value: ${{ jobs.release-please.outputs.releases_created }}
       tag_name:
         value: ${{ jobs.release-please.outputs.tag_name }}
 
@@ -29,6 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
+      releases_created: ${{ steps.release.outputs.releases_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
 
     steps:
