@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.13.0](https://github.com/slice-soft/ss-pipeline/compare/v0.12.3...v0.13.0) (2026-03-28)
+
+
+### Features
+
+* add workflow to package and upload Godot addons ([#76](https://github.com/slice-soft/ss-pipeline/issues/76)) ([744ba62](https://github.com/slice-soft/ss-pipeline/commit/744ba62978d5a19839ebab60a1eb366e5f2504c1))
+
 ## [0.12.3](https://github.com/slice-soft/ss-pipeline/compare/v0.12.2...v0.12.3) (2026-03-14)
 
 
