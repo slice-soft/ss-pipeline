@@ -1,0 +1,112 @@
+name: Run Script and Create PR
+
+# Reusable workflow that runs a bash script and opens a pull request if changes
+# are detected. Designed for automated cross-repo update jobs.
+#
+# Inputs:
+#   repository:     Target repo (owner/repo). Defaults to the calling repo.
+#   ref:            Branch/tag to checkout. Default: main.
+#   script-path:    Path to the script to run, relative to the repo root. Required.
+#   commit-message: Commit message. Required.
+#   pr-title:       Pull request title. Required.
+#   pr-body:        Pull request body. Default: "Automated update."
+#   branch:         Branch name for the PR. Required.
+#   base-branch:    Base branch for the PR. Default: main.
+#   add-paths:      Newline-separated glob patterns to stage. Default: "" (all changes).
+#
+# Secrets:
+#   token: PAT with Contents and Pull requests (read/write) on the target repo.
+#
+# Typical usage (same repo):
+#   update-readme:
+#     uses: slice-soft/ss-pipeline/.github/workflows/run-script-and-pr.yml@v0
+#     secrets:
+#       token: ${{ secrets.MY_PAT }}
+#     with:
+#       script-path: scripts/update-versions.sh
+#       commit-message: "chore(main): update versions"
+#       pr-title: "chore(main): update versions"
+#       branch: chore/update-versions
+#
+# Typical usage (cross-repo):
+#   update-other-repo:
+#     uses: slice-soft/ss-pipeline/.github/workflows/run-script-and-pr.yml@v0
+#     secrets:
+#       token: ${{ secrets.CROSS_REPO_TOKEN }}
+#     with:
+#       repository: my-org/other-repo
+#       script-path: scripts/update-versions.sh
+#       commit-message: "chore(main): update versions"
+#       pr-title: "chore(main): update versions"
+#       branch: chore/update-versions
+
+on:
+  workflow_call:
+    inputs:
+      repository:
+        description: "Target repository (owner/repo). Defaults to the calling repo."
+        type: string
+        default: ""
+      ref:
+        description: "Branch or tag to checkout"
+        type: string
+        default: main
+      script-path:
+        description: "Script to run (relative to repo root)"
+        type: string
+        required: true
+      commit-message:
+        description: "Commit message for the PR"
+        type: string
+        required: true
+      pr-title:
+        description: "Pull request title"
+        type: string
+        required: true
+      pr-body:
+        description: "Pull request body"
+        type: string
+        default: "Automated update."
+      branch:
+        description: "Branch name for the PR"
+        type: string
+        required: true
+      base-branch:
+        description: "Base branch for the PR"
+        type: string
+        default: main
+      add-paths:
+        description: "Files to stage (newline-separated globs). Empty = all changes."
+        type: string
+        default: ""
+    secrets:
+      token:
+        required: true
+
+jobs:
+  run-and-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repository || github.repository }}
+          ref: ${{ inputs.ref }}
+          token: ${{ secrets.token }}
+
+      - name: Run script
+        env:
+          GH_TOKEN: ${{ secrets.token }}
+        run: bash ${{ inputs.script-path }}
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.token }}
+          commit-message: ${{ inputs.commit-message }}
+          title: ${{ inputs.pr-title }}
+          body: ${{ inputs.pr-body }}
+          branch: ${{ inputs.branch }}
+          delete-branch: true
+          base: ${{ inputs.base-branch }}
+          add-paths: ${{ inputs.add-paths }}
