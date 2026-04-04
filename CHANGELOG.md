@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.15.0](https://github.com/slice-soft/ss-pipeline/compare/v0.14.0...v0.15.0) (2026-04-04)
+
+
+### Features
+
+* add Cloudflare variables to Terraform workflows ([#80](https://github.com/slice-soft/ss-pipeline/issues/80)) ([2ba9b56](https://github.com/slice-soft/ss-pipeline/commit/2ba9b567d280afcfc12933525d02c34990d4249c))
+
 ## [0.14.0](https://github.com/slice-soft/ss-pipeline/compare/v0.13.0...v0.14.0) (2026-03-29)
 
 
