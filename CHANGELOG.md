@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.17.0](https://github.com/slice-soft/ss-pipeline/compare/v0.16.2...v0.17.0) (2026-04-06)
+
+
+### Features
+
+* add reusable Terraform documentation workflow with PR creation ([#88](https://github.com/slice-soft/ss-pipeline/issues/88)) ([4677001](https://github.com/slice-soft/ss-pipeline/commit/46770013e4f0df7c3233d711c195943278a0b9cc))
+
 ## [0.16.2](https://github.com/slice-soft/ss-pipeline/compare/v0.16.1...v0.16.2) (2026-04-06)
 
 
