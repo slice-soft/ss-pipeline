@@ -7,7 +7,7 @@
 #
 #   jobs:
 #     deploy:
-#       uses: slice-soft/ss-github-iac/.github/workflows/pages-deploy.yml@main
+#       uses: slice-soft/ss-pipeline/.github/workflows/pages-deploy.yml@v0
 #       with:
 #         project-name: ss-keel-metrics
 #         directory: dist
@@ -26,7 +26,7 @@ on:
         required: true
         type: string
       directory:
-        description: "Build output directory to deploy (e.g. dist)."
+        description: "Build output directory relative to the repo root (e.g. dist, frontend/dist/app/browser)."
         required: false
         type: string
         default: dist
@@ -35,6 +35,11 @@ on:
         required: false
         type: string
         default: npm run build
+      working-directory:
+        description: "Directory where npm ci and the build command are executed. Use for monorepos (e.g. frontend)."
+        required: false
+        type: string
+        default: "."
       node-version:
         description: "Node.js version."
         required: false
@@ -65,9 +70,11 @@ jobs:
           cache: npm
 
       - name: Install dependencies
+        working-directory: ${{ inputs.working-directory }}
         run: npm ci
 
       - name: Build
+        working-directory: ${{ inputs.working-directory }}
         run: ${{ inputs.build-command }}
 
       - name: Deploy to Cloudflare Pages
