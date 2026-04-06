@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.16.0](https://github.com/slice-soft/ss-pipeline/compare/v0.15.0...v0.16.0) (2026-04-06)
+
+
+### Features
+
+* add reusable workflow for deploying to Cloudflare Pages ([#82](https://github.com/slice-soft/ss-pipeline/issues/82)) ([f0233e2](https://github.com/slice-soft/ss-pipeline/commit/f0233e2d401ca93d7d0b41f7a2c461fd9f665f17))
+
 ## [0.15.0](https://github.com/slice-soft/ss-pipeline/compare/v0.14.0...v0.15.0) (2026-04-04)
 
 
