@@ -15,7 +15,6 @@
 #         CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 #         CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 #
-# NOTE: move this file to ss-pipeline once the pattern is stable.
 
 name: Deploy to Cloudflare Pages
 
