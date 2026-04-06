@@ -1,0 +1,165 @@
+name: Terraform Docs (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      repository:
+        description: "Target repository (owner/repo). Defaults to the calling repo."
+        type: string
+        default: ""
+      ref:
+        description: "Branch or tag to checkout before generating docs."
+        type: string
+        default: main
+      module-paths:
+        description: "Newline-separated Terraform module directories relative to the repo root."
+        type: string
+        default: "."
+      output-file:
+        description: "README file name to update inside each module directory."
+        type: string
+        default: "README.md"
+      branch:
+        description: "Branch name for the generated PR. Empty = auto-generated."
+        type: string
+        default: ""
+      base-branch:
+        description: "Base branch for the PR."
+        type: string
+        default: main
+      commit-message:
+        description: "Commit message for the PR."
+        type: string
+        default: "docs(terraform): update module documentation"
+      pr-title:
+        description: "Title for the generated PR."
+        type: string
+        default: "docs(terraform): update module documentation"
+      pr-body:
+        description: "Body for the generated PR."
+        type: string
+        default: "Automated Terraform module documentation update generated with terraform-docs."
+      require-markers:
+        description: "Fail if an existing README is missing BEGIN_TF_DOCS/END_TF_DOCS markers."
+        type: boolean
+        default: true
+    secrets:
+      token:
+        required: true
+
+jobs:
+  docs-and-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repository || github.repository }}
+          ref: ${{ inputs.ref }}
+          token: ${{ secrets.token }}
+
+      - name: Normalize module paths
+        id: modules
+        shell: bash
+        env:
+          MODULE_PATHS: ${{ inputs.module-paths }}
+          OUTPUT_FILE: ${{ inputs.output-file }}
+        run: |
+          set -euo pipefail
+
+          module_csv=""
+          add_paths=""
+
+          while IFS= read -r module_dir; do
+            trimmed="$(printf '%s' "$module_dir" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+
+            if [ -z "$trimmed" ]; then
+              continue
+            fi
+
+            if [ -z "$module_csv" ]; then
+              module_csv="$trimmed"
+            else
+              module_csv="${module_csv},${trimmed}"
+            fi
+
+            readme_path="${trimmed}/${OUTPUT_FILE}"
+            if [ "$trimmed" = "." ]; then
+              readme_path="${OUTPUT_FILE}"
+            fi
+
+            if [ -z "$add_paths" ]; then
+              add_paths="$readme_path"
+            else
+              add_paths="${add_paths}"$'\n'"$readme_path"
+            fi
+          done <<< "$MODULE_PATHS"
+
+          if [ -z "$module_csv" ]; then
+            echo "::error::No Terraform module paths were provided."
+            exit 1
+          fi
+
+          {
+            echo "module_csv=${module_csv}"
+            echo "add_paths<<EOF"
+            printf '%s\n' "$add_paths"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Validate README markers
+        if: inputs.require-markers
+        shell: bash
+        env:
+          MODULE_PATHS: ${{ inputs.module-paths }}
+          OUTPUT_FILE: ${{ inputs.output-file }}
+        run: |
+          set -euo pipefail
+
+          while IFS= read -r module_dir; do
+            trimmed="$(printf '%s' "$module_dir" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+
+            if [ -z "$trimmed" ]; then
+              continue
+            fi
+
+            target_file="${trimmed}/${OUTPUT_FILE}"
+            if [ "$trimmed" = "." ]; then
+              target_file="${OUTPUT_FILE}"
+            fi
+
+            if [ -f "$target_file" ]; then
+              if ! grep -q "<!-- BEGIN_TF_DOCS -->" "$target_file" || ! grep -q "<!-- END_TF_DOCS -->" "$target_file"; then
+                echo "::error file=${target_file}::README exists but is missing <!-- BEGIN_TF_DOCS --> / <!-- END_TF_DOCS --> markers."
+                exit 1
+              fi
+            fi
+          done <<< "$MODULE_PATHS"
+
+      - name: Generate Terraform docs
+        uses: terraform-docs/gh-actions@v1.4.1
+        with:
+          working-dir: ${{ steps.modules.outputs.module_csv }}
+          output-file: ${{ inputs.output-file }}
+          output-method: inject
+          template: |-
+            <!-- BEGIN_TF_DOCS -->
+            {{ .Content }}
+            <!-- END_TF_DOCS -->
+          git-push: "false"
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.token }}
+          commit-message: ${{ inputs.commit-message }}
+          title: ${{ inputs.pr-title }}
+          body: ${{ inputs.pr-body }}
+          branch: ${{ inputs.branch != '' && inputs.branch || format('chore/terraform-docs-{0}-{1}', github.run_id, github.run_attempt) }}
+          delete-branch: true
+          base: ${{ inputs.base-branch }}
+          add-paths: ${{ steps.modules.outputs.add_paths }}

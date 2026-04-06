@@ -145,6 +145,41 @@ Builds and publishes a Docker image to GitHub Container Registry.
 
 ---
 
+### `tf-docs.yml` — Terraform Module Docs + PR
+
+Generates Terraform module documentation with `terraform-docs`, injects the output between `<!-- BEGIN_TF_DOCS -->` and `<!-- END_TF_DOCS -->`, and opens a PR against `main` instead of pushing directly.
+
+**Inputs**
+- `module-paths` — Newline-separated list of module directories. Default: `.`
+- `output-file` — README file name inside each module. Default: `README.md`
+- `require-markers` — Fails if an existing README does not contain the TF docs markers. Default: `true`
+- `branch` — Optional PR branch name. If omitted, an ephemeral branch is generated.
+
+**Secret required:** `token` with `contents` and `pull-requests` write permissions on the target repo.
+
+```yaml
+jobs:
+  docs:
+    uses: slice-soft/ss-pipeline/.github/workflows/tf-docs.yml@v0
+    with:
+      module-paths: |
+        .
+        modules/network
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+Expected README placeholder in each module:
+
+```md
+<!-- BEGIN_TF_DOCS -->
+<!-- END_TF_DOCS -->
+```
+
+This workflow runs step by step inside the reusable workflow, uses `terraform-docs/gh-actions@v1.4.1` in `inject` mode, and opens a PR only when documentation changes are detected.
+
+---
+
 ## Requirements per workflow
 
 | Workflow | Requirement |
@@ -155,6 +190,7 @@ Builds and publishes a Docker image to GitHub Container Registry.
 | `create-release.yml` | Conventional Commits, write permissions |
 | `deploy-cdn-cloudflare.yml` | R2 secrets configured, artifact uploaded |
 | `build-docker.yml` | Dockerfile, GitHub Container Registry configured |
+| `tf-docs.yml` | Terraform module directories, `README.md` marker block for injection-only updates |
 
 ---
 
