@@ -1,0 +1,193 @@
+name: Terraform State Migration (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        type: string
+        default: "."
+      terraform-version:
+        type: string
+        default: "1.9.0"
+      dry-run:
+        description: "When true, only prints the terraform state mv commands"
+        required: true
+        type: boolean
+      source-state-bucket:
+        description: "R2 bucket containing the source state file"
+        required: true
+        type: string
+      source-state-key:
+        description: "R2 object key for the source state file"
+        required: true
+        type: string
+      target-state-bucket:
+        description: "R2 bucket containing the target state file"
+        required: true
+        type: string
+      target-state-key:
+        description: "R2 object key for the target state file"
+        required: true
+        type: string
+      moves-file:
+        description: "Optional repository file with one mapping per line"
+        required: false
+        type: string
+        default: ""
+      moves:
+        description: "Optional inline override. Paste one mapping per line."
+        required: false
+        type: string
+        default: ""
+    secrets:
+      TF_R2_ACCESS_KEY_ID:
+        required: true
+      TF_R2_SECRET_ACCESS_KEY:
+        required: true
+      TF_R2_ENDPOINT:
+        required: true
+      TF_GITHUB_TOKEN:
+        required: false
+
+jobs:
+  state-migrate:
+    name: Terraform State Migration
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      TF_IN_AUTOMATION: true
+      AWS_ACCESS_KEY_ID: ${{ secrets.TF_R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_R2_SECRET_ACCESS_KEY }}
+      AWS_ENDPOINT_URL_S3: ${{ secrets.TF_R2_ENDPOINT }}
+      TF_VAR_github_token: ${{ secrets.TF_GITHUB_TOKEN }}
+      SOURCE_BUCKET: ${{ inputs.source-state-bucket }}
+      TARGET_BUCKET: ${{ inputs.target-state-bucket }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform-version }}
+
+      - name: Terraform init
+        working-directory: ${{ inputs.working-directory }}
+        run: terraform init -input=false -reconfigure -backend-config="bucket=${TARGET_BUCKET}"
+
+      - name: Download source state
+        working-directory: ${{ inputs.working-directory }}
+        run: aws s3 cp "s3://${SOURCE_BUCKET}/${{ inputs.source-state-key }}" source.tfstate --region auto
+
+      - name: Download target state when it exists
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if aws s3 ls "s3://${TARGET_BUCKET}/${{ inputs.target-state-key }}" --region auto >/dev/null 2>&1; then
+            aws s3 cp "s3://${TARGET_BUCKET}/${{ inputs.target-state-key }}" target.tfstate --region auto
+            echo "TARGET_EXISTS=true" >> "$GITHUB_ENV"
+          else
+            echo "TARGET_EXISTS=false" >> "$GITHUB_ENV"
+          fi
+
+      - name: Initialize empty target state
+        if: env.TARGET_EXISTS == 'false'
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cat > target.tfstate <<EOF
+          {
+            "version": 4,
+            "terraform_version": "1.9.0",
+            "serial": 1,
+            "lineage": "$(uuidgen | tr '[:upper:]' '[:lower:]')",
+            "outputs": {},
+            "resources": []
+          }
+          EOF
+
+      - name: Backup remote states
+        if: ${{ inputs.dry-run == false }}
+        working-directory: ${{ inputs.working-directory }}
+        env:
+          SOURCE_BACKUP_PREFIX: state-backups/source/${{ github.run_id }}
+          TARGET_BACKUP_PREFIX: state-backups/target/${{ github.run_id }}
+        run: |
+          aws s3 cp source.tfstate "s3://${SOURCE_BUCKET}/${SOURCE_BACKUP_PREFIX}/source-before.tfstate" --region auto
+          aws s3 cp target.tfstate "s3://${TARGET_BUCKET}/${TARGET_BACKUP_PREFIX}/target-before.tfstate" --region auto
+
+      - name: Resolve move mappings
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        env:
+          INLINE_MOVES: ${{ inputs.moves }}
+          INPUT_MOVES_FILE: ${{ inputs.moves-file }}
+        run: |
+          set -euo pipefail
+
+          if [[ -n "${INLINE_MOVES// }" ]]; then
+            printf '%s\n' "$INLINE_MOVES" > resolved-moves.txt
+          elif [[ -n "$INPUT_MOVES_FILE" && -f "$INPUT_MOVES_FILE" ]]; then
+            cp "$INPUT_MOVES_FILE" resolved-moves.txt
+          else
+            echo "No mappings were provided."
+            exit 1
+          fi
+
+          echo "Resolved move mappings:"
+          cat resolved-moves.txt
+
+      - name: Move resources between states
+        working-directory: ${{ inputs.working-directory }}
+        shell: bash
+        env:
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          set -euo pipefail
+
+          while IFS= read -r line; do
+            trimmed="$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+
+            if [[ -z "$trimmed" ]] || [[ "$trimmed" == \#* ]]; then
+              continue
+            fi
+
+            if [[ "$trimmed" == *"=>"* ]]; then
+              from_addr="$(echo "$trimmed" | awk -F'=>' '{print $1}' | sed 's/[[:space:]]*$//')"
+              to_addr="$(echo "$trimmed" | awk -F'=>' '{print $2}' | sed 's/^[[:space:]]*//')"
+            else
+              from_addr="$trimmed"
+              to_addr="$trimmed"
+            fi
+
+            echo "Mapping: $from_addr => $to_addr"
+
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "[dry-run] terraform state mv -state=source.tfstate -state-out=target.tfstate '$from_addr' '$to_addr'"
+            else
+              terraform state mv -state=source.tfstate -state-out=target.tfstate "$from_addr" "$to_addr"
+            fi
+          done < resolved-moves.txt
+
+      - name: Show source state snapshot
+        if: ${{ inputs.dry-run == false }}
+        working-directory: ${{ inputs.working-directory }}
+        run: terraform state list -state=source.tfstate | head -n 200
+
+      - name: Show target state snapshot
+        if: ${{ inputs.dry-run == false }}
+        working-directory: ${{ inputs.working-directory }}
+        run: terraform state list -state=target.tfstate | head -n 200
+
+      - name: Upload updated states
+        if: ${{ inputs.dry-run == false }}
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          aws s3 cp source.tfstate "s3://${SOURCE_BUCKET}/${{ inputs.source-state-key }}" --region auto
+          aws s3 cp target.tfstate "s3://${TARGET_BUCKET}/${{ inputs.target-state-key }}" --region auto
