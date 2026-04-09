@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.17.1](https://github.com/slice-soft/ss-pipeline/compare/v0.17.0...v0.17.1) (2026-04-09)
+
+
+### Bug Fixes
+
+* update Terraform init command to include backend bucket configuration ([#90](https://github.com/slice-soft/ss-pipeline/issues/90)) ([9564260](https://github.com/slice-soft/ss-pipeline/commit/9564260e5a33a134c60f3491a8e5656d4e1717f5))
+
 ## [0.17.0](https://github.com/slice-soft/ss-pipeline/compare/v0.16.2...v0.17.0) (2026-04-06)
 
 
