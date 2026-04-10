@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.20.0](https://github.com/slice-soft/ss-pipeline/compare/v0.19.0...v0.20.0) (2026-04-10)
+
+
+### Features
+
+* enhance release workflow to include optional root-level files ([#96](https://github.com/slice-soft/ss-pipeline/issues/96)) ([035f369](https://github.com/slice-soft/ss-pipeline/commit/035f369bd7cffdfeeff16f7aa63d5d4f6e3860de))
+
 ## [0.19.0](https://github.com/slice-soft/ss-pipeline/compare/v0.18.0...v0.19.0) (2026-04-10)
 
 
