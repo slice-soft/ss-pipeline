@@ -9,7 +9,7 @@ name: CI - Godot Headless Tests
 #   test-command   Full shell command used to run the test suite
 #
 # The test command must exit with code 1 on failure and 0 on success.
-#
+# The test command is run in the root of the repository, with Godot available in PATH.
 # Typical usage:
 #   test:
 #     uses: slice-soft/ss-pipeline/.github/workflows/ci-godot.yml@v0
