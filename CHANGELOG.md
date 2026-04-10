@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.19.0](https://github.com/slice-soft/ss-pipeline/compare/v0.18.0...v0.19.0) (2026-04-10)
+
+
+### Features
+
+* add CI workflow for headless Godot tests ([#94](https://github.com/slice-soft/ss-pipeline/issues/94)) ([962b13e](https://github.com/slice-soft/ss-pipeline/commit/962b13e29d6c127719307c223c44200625685a35))
+
 ## [0.18.0](https://github.com/slice-soft/ss-pipeline/compare/v0.17.1...v0.18.0) (2026-04-09)
 
 
