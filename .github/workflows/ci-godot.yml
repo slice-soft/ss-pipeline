@@ -2,20 +2,20 @@ name: CI - Godot Headless Tests
 
 # Reusable workflow that runs a GDScript test suite headlessly.
 # Downloads and caches the requested Godot version, reimports the project
-# to rebuild the script class cache, then executes the runner script.
+# to rebuild the script class cache, then executes the provided test command.
 #
 # Inputs:
 #   godot-version  Godot version to use, e.g. "4.5" (default)
-#   test-script    Path to the SceneTree runner script (default: test/runner.gd)
+#   test-command   Full shell command used to run the test suite
 #
-# The runner script must exit with code 1 on failure and 0 on success.
+# The test command must exit with code 1 on failure and 0 on success.
 #
 # Typical usage:
 #   test:
 #     uses: slice-soft/ss-pipeline/.github/workflows/ci-godot.yml@v0
 #     with:
 #       godot-version: "4.5"
-#       test-script: test/runner.gd
+#       test-command: godot --headless --editor --path . --script test/runner.gd
 
 on:
   workflow_call:
@@ -24,14 +24,14 @@ on:
         description: "Godot stable version (e.g. 4.5)"
         type: string
         default: "4.5"
-      test-script:
-        description: "Path to the headless test runner script"
+      test-command:
+        description: "Full shell command used to run the test suite"
         type: string
-        default: "test/runner.gd"
+        default: "godot --headless --path . --script test/runner.gd"
 
 jobs:
   test:
-    name: Godot ${{ inputs.godot-version }} — headless tests
+    name: Godot ${{ inputs.godot-version }} — tests
     runs-on: ubuntu-latest
 
     steps:
@@ -66,4 +66,6 @@ jobs:
         run: godot --headless --editor --path . --quit 2>&1 || true
 
       - name: Run tests
-        run: godot --headless --path . --script ${{ inputs.test-script }}
+        shell: bash
+        run: |
+          ${{ inputs.test-command }}
