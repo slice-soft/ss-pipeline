@@ -14,8 +14,8 @@ name: Release Godot Addons
 #   4. If not: zips the addon folder and uploads it
 #
 # Each zip contains the addon folder at its root, ready to drop into addons/.
-# If README.md, CHANGELOG.md, or LICENSE exist at the repository root they are
-# also included at the root of the zip.
+# Optionally, extra files from the repository root can be included in each zip
+# by passing their names via the include-root-docs input (one file per line).
 #
 # Typical usage:
 #   release-addons:
@@ -23,14 +23,18 @@ name: Release Godot Addons
 #     if: needs.release.outputs.releases_created == 'true'
 #     uses: slice-soft/ss-pipeline/.github/workflows/release-godot-addons.yml@v0
 #     secrets: inherit
+#     with:
+#       include-root-docs: |
+#         README.md
+#         CHANGELOG.md
 
 on:
   workflow_call:
     inputs:
       include-root-docs:
-        description: "Include README.md, CHANGELOG.md and LICENSE from the repository root in each zip"
-        type: boolean
-        default: false
+        description: "Newline-separated list of files from the repository root to include in each zip (e.g. README.md, CHANGELOG.md)"
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -74,14 +78,16 @@ jobs:
             echo "Packaging $addon_name @ v${version}..."
             (cd "$(dirname "$addon_path")" && zip -r "${GITHUB_WORKSPACE}/zips/${zip_name}" "$(basename "$addon_path")")
 
-            # Optionally include root-level docs (opt-in via include-root-docs input)
-            if [ "${{ inputs.include-root-docs }}" = "true" ]; then
-              for doc in README.md CHANGELOG.md LICENSE; do
-                if [ -f "${GITHUB_WORKSPACE}/${doc}" ]; then
-                  (cd "${GITHUB_WORKSPACE}" && zip -u "zips/${zip_name}" "${doc}")
-                fi
-              done
-            fi
+            # Optionally include root-level files listed in include-root-docs (one per line)
+            while IFS= read -r doc; do
+              doc=$(echo "$doc" | xargs)  # trim whitespace
+              [ -z "$doc" ] && continue
+              if [ -f "${GITHUB_WORKSPACE}/${doc}" ]; then
+                (cd "${GITHUB_WORKSPACE}" && zip -u "zips/${zip_name}" "${doc}")
+              else
+                echo "Warning: $doc not found at repository root — skipping"
+              fi
+            done <<< "${{ inputs.include-root-docs }}"
 
             gh release upload "$tag" "zips/${zip_name}" --repo "$GITHUB_REPOSITORY"
             echo "Uploaded: ${zip_name} → ${tag}"
