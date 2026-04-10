@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.21.0](https://github.com/slice-soft/ss-pipeline/compare/v0.20.0...v0.21.0) (2026-04-10)
+
+
+### Features
+
+* update CI workflow to use test command input instead of script path ([#99](https://github.com/slice-soft/ss-pipeline/issues/99)) ([33711e7](https://github.com/slice-soft/ss-pipeline/commit/33711e72e012b4535ff1c8015e04835d8d2cca2c))
+
 ## [0.20.0](https://github.com/slice-soft/ss-pipeline/compare/v0.19.0...v0.20.0) (2026-04-10)
 
 
