@@ -1,0 +1,43 @@
+name: Validate Release Source Branch
+
+on:
+  workflow_call:
+    inputs:
+      target_branch:
+        description: "Protected stable branch"
+        required: false
+        default: "main"
+        type: string
+      required_source_branch:
+        description: "Only this source branch can target the protected stable branch"
+        required: false
+        default: "release"
+        type: string
+
+jobs:
+  release-source:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate PR source branch
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          REQUIRED_SOURCE_BRANCH: ${{ inputs.required_source_branch }}
+        run: |
+          if [ "$EVENT_NAME" != "pull_request" ] && [ "$EVENT_NAME" != "pull_request_target" ]; then
+            echo "::notice::Skipping source-branch validation outside pull_request events."
+            exit 0
+          fi
+
+          if [ "$BASE_REF" != "$TARGET_BRANCH" ]; then
+            echo "::notice::Skipping source-branch validation for base branch $BASE_REF."
+            exit 0
+          fi
+
+          if [ "$HEAD_REF" != "$REQUIRED_SOURCE_BRANCH" ]; then
+            echo "::error::Pull requests into ${TARGET_BRANCH} must come from ${REQUIRED_SOURCE_BRANCH}, received ${HEAD_REF}."
+            exit 1
+          fi

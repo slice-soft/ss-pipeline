@@ -1,0 +1,345 @@
+name: Release Desktop Python App - PyInstaller
+
+# Reusable workflow to build and distribute a Python desktop app.
+#
+# Artifacts per platform:
+#   macOS  arm64 + x86_64  →  CLI binary (.zip)  +  GUI .app bundle (.zip)  +  Homebrew bundle (.zip)
+#   Linux  x86_64          →  CLI binary (.tar.gz)  [no GUI build]
+#   Windows x86_64         →  CLI .exe (.zip)  +  GUI no-console .exe (.zip)
+#
+# Optional: macOS GUI .app + CLI binary can be published to a Homebrew Cask tap:
+#   brew install --cask <app-name>   →  .app in /Applications + CLI in PATH
+#
+# Notes:
+#   - Add assets/icon.icns for macOS icon
+#   - Add assets/icon.ico  for Windows icon
+#   - Homebrew Cask publication assumes a public GitHub release
+#
+# Typical usage:
+#   build:
+#     uses: slice-soft/ss-pipeline/.github/workflows/release-desktop-python.yml@v0
+#     with:
+#       python-version:  "3.11"
+#       app-name:        "my-app"
+#       app-description: "What this app does"
+#       tag_name:        ${{ needs.release.outputs.tag_name }}
+#       extra-pyinstaller-args: "--collect-all PySide6"
+#       publish-homebrew-cask: true
+#     secrets: inherit
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: "Python version to use"
+        type: string
+        default: "3.11"
+      app-name:
+        description: "Application name used for binary/bundle/cask naming"
+        type: string
+        required: true
+      app-description:
+        description: "Short description used in the Homebrew Cask"
+        type: string
+        default: ""
+      tag_name:
+        description: "Release tag to build (e.g. v1.0.0)"
+        type: string
+        required: true
+      entry-point:
+        description: "PyInstaller entry-point script (relative to repo root)"
+        type: string
+        default: "main.py"
+      extra-pyinstaller-args:
+        description: "Extra flags appended to every PyInstaller invocation (space-separated)"
+        type: string
+        default: ""
+      publish-homebrew-cask:
+        description: "If true, publish a macOS Homebrew Cask backed by GitHub release assets"
+        type: boolean
+        default: false
+      homebrew-tap-repo:
+        description: "GitHub repository for the Homebrew tap"
+        type: string
+        default: "slice-soft/homebrew-tap"
+    secrets:
+      HOMEBREW_TAP_TOKEN:
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  # ------------------------------------------------------------------ build --
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14        # Apple Silicon (arm64)
+            platform: macos-arm64
+          - os: macos-15-intel  # Intel (x86_64)
+            platform: macos-x86_64
+          - os: ubuntu-22.04    # Linux x86_64
+            platform: linux-x86_64
+          - os: windows-latest  # Windows x86_64
+            platform: windows-x86_64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.tag_name }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      # --------------------------------------------------- CLI (all platforms) --
+      - name: Build CLI binary
+        shell: bash
+        env:
+          APP_NAME:   ${{ inputs.app-name }}
+          ENTRY:      ${{ inputs.entry-point }}
+          EXTRA_ARGS: ${{ inputs.extra-pyinstaller-args }}
+        run: |
+          # Build args array to avoid empty-string injection issues
+          ARGS=(
+            --onefile
+            --console
+            --name "$APP_NAME"
+          )
+          # Append extra args only when non-empty
+          [[ -n "$EXTRA_ARGS" ]] && read -ra _extra <<< "$EXTRA_ARGS" && ARGS+=("${_extra[@]}")
+          ARGS+=("$ENTRY")
+
+          pyinstaller "${ARGS[@]}"
+
+      # ----------------------- GUI .app bundle (macOS — no --onefile → real .app) --
+      - name: Build GUI .app bundle (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          APP_NAME:   ${{ inputs.app-name }}
+          ENTRY:      ${{ inputs.entry-point }}
+          EXTRA_ARGS: ${{ inputs.extra-pyinstaller-args }}
+        run: |
+          ARGS=(
+            --windowed
+            --name "${APP_NAME}-gui"
+          )
+          [[ -f "assets/icon.icns" ]] && ARGS+=(--icon assets/icon.icns)
+          [[ -n "$EXTRA_ARGS" ]] && read -ra _extra <<< "$EXTRA_ARGS" && ARGS+=("${_extra[@]}")
+          ARGS+=("$ENTRY")
+
+          pyinstaller "${ARGS[@]}"
+
+      # ------------- GUI .exe (Windows — --onefile --windowed → no-console exe) --
+      - name: Build GUI .exe (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          APP_NAME:   ${{ inputs.app-name }}
+          ENTRY:      ${{ inputs.entry-point }}
+          EXTRA_ARGS: ${{ inputs.extra-pyinstaller-args }}
+        run: |
+          ARGS=(
+            --onefile
+            --windowed
+            --name "${APP_NAME}-gui"
+          )
+          [[ -f "assets/icon.ico" ]] && ARGS+=(--icon assets/icon.ico)
+          [[ -n "$EXTRA_ARGS" ]] && read -ra _extra <<< "$EXTRA_ARGS" && ARGS+=("${_extra[@]}")
+          ARGS+=("$ENTRY")
+
+          pyinstaller "${ARGS[@]}"
+
+      # -------------------------------------------------------------- archive --
+      - name: Archive CLI binary (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          APP_NAME: ${{ inputs.app-name }}
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          cd dist
+          zip "${APP_NAME}_${PLATFORM}.zip" "${APP_NAME}"
+
+      - name: Archive GUI .app bundle (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          APP_NAME: ${{ inputs.app-name }}
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          cd dist
+          # zip -r preserves the full .app directory structure
+          zip -r "${APP_NAME}-gui_${PLATFORM}.zip" "${APP_NAME}-gui.app"
+
+      - name: Archive Homebrew bundle (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          APP_NAME: ${{ inputs.app-name }}
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          cd dist
+          # Homebrew needs both the staged CLI binary and the .app bundle.
+          zip -r "${APP_NAME}-homebrew_${PLATFORM}.zip" "${APP_NAME}" "${APP_NAME}-gui.app"
+
+      - name: Archive CLI binary (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        env:
+          APP_NAME: ${{ inputs.app-name }}
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          cd dist
+          tar czf "${APP_NAME}_${PLATFORM}.tar.gz" "${APP_NAME}"
+
+      - name: Archive CLI + GUI (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          APP_NAME: ${{ inputs.app-name }}
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          $app  = $env:APP_NAME
+          $plat = $env:PLATFORM
+
+          Compress-Archive `
+            -Path      "dist\$app.exe" `
+            -DestinationPath "dist\${app}_${plat}.zip"
+
+          Compress-Archive `
+            -Path      "dist\$app-gui.exe" `
+            -DestinationPath "dist\${app}-gui_${plat}.zip"
+
+      - name: Upload packaged artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.platform }}
+          path: |
+            dist/${{ inputs.app-name }}_${{ matrix.platform }}.*
+            dist/${{ inputs.app-name }}-gui_${{ matrix.platform }}.*
+            dist/${{ inputs.app-name }}-homebrew_${{ matrix.platform }}.zip
+          if-no-files-found: error
+
+  publish-release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download packaged artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: release-assets
+
+      - name: Upload to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name }}
+          files: release-assets/*
+
+  # --------------------------------------------------------- homebrew cask --
+  update-homebrew:
+    needs: publish-release
+    runs-on: ubuntu-latest
+    if: inputs.publish-homebrew-cask == true && needs.publish-release.result == 'success'
+
+    steps:
+      - name: Validate Homebrew configuration
+        run: |
+          if [[ -z "${{ secrets.HOMEBREW_TAP_TOKEN }}" ]]; then
+            echo "::error::HOMEBREW_TAP_TOKEN is required when publish-homebrew-cask is true"
+            exit 1
+          fi
+
+      - name: Download macOS GUI zips and compute SHA256
+        env:
+          REPO: ${{ github.repository }}
+          TAG:  ${{ inputs.tag_name }}
+          APP:  ${{ inputs.app-name }}
+        run: |
+          BASE="https://github.com/${REPO}/releases/download/${TAG}"
+          curl -fsSL "${BASE}/${APP}-homebrew_macos-arm64.zip"  -o arm64.zip
+          curl -fsSL "${BASE}/${APP}-homebrew_macos-x86_64.zip" -o x86_64.zip
+
+          echo "SHA256_ARM64=$(sha256sum arm64.zip  | awk '{print $1}')" >> $GITHUB_ENV
+          echo "SHA256_X86=$(sha256sum   x86_64.zip | awk '{print $1}')" >> $GITHUB_ENV
+          echo "VERSION=${TAG#v}"                                         >> $GITHUB_ENV
+
+      - name: Update or create Homebrew Cask
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          REPO:             ${{ github.repository }}
+          TAP_REPO:         ${{ inputs.homebrew-tap-repo }}
+          TAG:              ${{ inputs.tag_name }}
+          APP:              ${{ inputs.app-name }}
+          DESCRIPTION:      ${{ inputs.app-description }}
+        run: |
+          git clone \
+            "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/${TAP_REPO}.git" \
+            tap
+          cd tap
+          mkdir -p Casks
+
+          CASK_PATH="Casks/${APP}.rb"
+
+          # Re-generate the cask deterministically so existing files stay aligned
+          # with the release asset names and installation behavior.
+          python3 << PYEOF
+          import os
+
+          app         = os.environ["APP"]
+          version     = os.environ["VERSION"]
+          sha_arm     = os.environ["SHA256_ARM64"]
+          sha_x86     = os.environ["SHA256_X86"]
+          repo        = os.environ["REPO"]
+          description = os.environ["DESCRIPTION"]
+          path        = f"Casks/{app}.rb"
+
+          content = f'''cask "{app}" do
+            version "{version}"
+
+            on_arm do
+              url "https://github.com/{repo}/releases/download/v#{{version}}/{app}-homebrew_macos-arm64.zip"
+              sha256 "{sha_arm}"
+            end
+            on_intel do
+              url "https://github.com/{repo}/releases/download/v#{{version}}/{app}-homebrew_macos-x86_64.zip"
+              sha256 "{sha_x86}"
+            end
+
+            name "{app}"
+            desc "{description}"
+            homepage "https://github.com/{repo}"
+
+            app "{app}-gui.app"
+            binary "#{{staged_path}}/{app}", target: "{app}"
+          end
+          '''
+
+          open(path, "w").write(content)
+          print(f"Wrote {path}")
+          PYEOF
+
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name  "github-actions[bot]"
+          git add "$CASK_PATH"
+          git diff --staged --quiet && echo "No changes to commit" && exit 0
+          git commit -m "chore: update ${APP} cask to ${TAG}"
+          git push

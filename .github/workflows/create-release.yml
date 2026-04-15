@@ -15,6 +15,22 @@ name: Create Release - Release Please
 
 on:
   workflow_call:
+    inputs:
+      release_strategy:
+        description: "Release flow: stable on the target branch, or rc with release branch prereleases plus main stable releases"
+        required: false
+        default: "stable"
+        type: string
+      rc_config_file:
+        description: "release-please config file used for prereleases on the release branch"
+        required: false
+        default: "release-please-config.rc.json"
+        type: string
+      rc_manifest_file:
+        description: "release-please manifest file used for prereleases on the release branch"
+        required: false
+        default: ".release-please-manifest.rc.json"
+        type: string
     outputs:
       release_created:
         description: "True if a single-package release was created"
@@ -24,6 +40,12 @@ on:
         value: ${{ jobs.release-please.outputs.releases_created }}
       tag_name:
         value: ${{ jobs.release-please.outputs.tag_name }}
+      release_channel:
+        description: "Resolved release channel for the current run: stable or rc"
+        value: ${{ jobs.release-please.outputs.release_channel }}
+      target_branch:
+        description: "Resolved target branch for release-please"
+        value: ${{ jobs.release-please.outputs.target_branch }}
 
 permissions:
   contents: write
@@ -36,22 +58,76 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       releases_created: ${{ steps.release.outputs.releases_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
+      release_channel: ${{ steps.context.outputs.release_channel }}
+      target_branch: ${{ steps.context.outputs.target_branch }}
 
     steps:
+      - name: Resolve release context
+        id: context
+        env:
+          RELEASE_STRATEGY: ${{ inputs.release_strategy }}
+          RC_CONFIG_FILE: ${{ inputs.rc_config_file }}
+          RC_MANIFEST_FILE: ${{ inputs.rc_manifest_file }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          case "$RELEASE_STRATEGY" in
+            stable|rc) ;;
+            *)
+              echo "::error::Unsupported release_strategy: $RELEASE_STRATEGY"
+              exit 1
+              ;;
+          esac
+
+          target_branch="$REF_NAME"
+          if [ "$EVENT_NAME" = "pull_request" ] || [ "$EVENT_NAME" = "pull_request_target" ]; then
+            target_branch="$PR_BASE_REF"
+          fi
+
+          release_channel="stable"
+          config_file="release-please-config.json"
+          manifest_file=".release-please-manifest.json"
+          should_run="true"
+
+          if [ "$RELEASE_STRATEGY" = "rc" ]; then
+            case "$target_branch" in
+              release)
+                release_channel="rc"
+                config_file="$RC_CONFIG_FILE"
+                manifest_file="$RC_MANIFEST_FILE"
+                ;;
+              main) ;;
+              *)
+                should_run="false"
+                ;;
+            esac
+          fi
+
+          {
+            echo "target_branch=$target_branch"
+            echo "release_channel=$release_channel"
+            echo "config_file=$config_file"
+            echo "manifest_file=$manifest_file"
+            echo "should_run=$should_run"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Run release-please
         id: release
+        if: ${{ steps.context.outputs.should_run == 'true' }}
         uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
+          target-branch: ${{ steps.context.outputs.target_branch }}
+          config-file: ${{ steps.context.outputs.config_file }}
+          manifest-file: ${{ steps.context.outputs.manifest_file }}
 
       - name: Checkout repository
         if: ${{ steps.release.outputs.release_created }}
         uses: actions/checkout@v6
 
       - name: Update Major Tag
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ steps.release.outputs.release_created && steps.context.outputs.release_channel == 'stable' && !contains(steps.release.outputs.tag_name, '-') }}
         run: |
           major_tag=$(echo "${{ steps.release.outputs.tag_name }}" | cut -d. -f1)
           git tag -f $major_tag

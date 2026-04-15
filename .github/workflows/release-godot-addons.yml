@@ -35,6 +35,10 @@ on:
         description: "Newline-separated list of files from the repository root to include in each zip (e.g. README.md, CHANGELOG.md)"
         type: string
         default: ""
+      manifest-file:
+        description: "release-please manifest file to read versions from"
+        type: string
+        default: ".release-please-manifest.json"
 
 permissions:
   contents: write
@@ -51,11 +55,12 @@ jobs:
       - name: Package and upload each released addon
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MANIFEST_FILE: ${{ inputs.manifest-file }}
         run: |
           mkdir -p zips
 
           while IFS= read -r addon_path; do
-            version=$(jq -r --arg p "$addon_path" '.[$p]' .release-please-manifest.json)
+            version=$(jq -r --arg p "$addon_path" '.[$p]' "$MANIFEST_FILE")
             addon_name=$(basename "$addon_path")
             tag="${addon_name}-v${version}"
             zip_name="${addon_name}-v${version}.zip"
@@ -92,4 +97,4 @@ jobs:
             gh release upload "$tag" "zips/${zip_name}" --repo "$GITHUB_REPOSITORY"
             echo "Uploaded: ${zip_name} → ${tag}"
 
-          done < <(jq -r 'keys[]' .release-please-manifest.json)
+          done < <(jq -r 'keys[]' "$MANIFEST_FILE")

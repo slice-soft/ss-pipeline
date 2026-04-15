@@ -95,6 +95,56 @@ jobs:
     uses: slice-soft/ss-pipeline/.github/workflows/create-release.yml@v0
 ```
 
+`create-release.yml` now supports two modes:
+
+- `release_strategy: stable` keeps the current behavior and reads `release-please-config.json` plus `.release-please-manifest.json`.
+- `release_strategy: rc` expects the caller workflow to run on both `release` and `main`. It reads `release-please-config.rc.json` plus `.release-please-manifest.rc.json` on `release`, and falls back to the stable files on `main`.
+
+Example opt-in for RC repositories:
+
+```yaml
+on:
+  push:
+    branches:
+      - main
+      - release
+
+jobs:
+  release:
+    uses: slice-soft/ss-pipeline/.github/workflows/create-release.yml@v0
+    with:
+      release_strategy: rc
+    secrets: inherit
+```
+
+---
+
+### `promote-release.yml` — Promote RC to Stable
+
+Opens a PR from `release` to `main` using the latest `*-rc.N` tag merged in the release branch.
+
+```yaml
+jobs:
+  promote:
+    uses: slice-soft/ss-pipeline/.github/workflows/promote-release.yml@v0
+    with:
+      confirm: true
+    secrets: inherit
+```
+
+---
+
+### `validate-release-source.yml` — Require `release -> main`
+
+Fails PR validation when a repository with RC flow receives a pull request into `main` from any branch other than `release`.
+
+```yaml
+jobs:
+  release-source:
+    name: release-source
+    uses: slice-soft/ss-pipeline/.github/workflows/validate-release-source.yml@v0
+```
+
 ---
 
 ### `deploy-cdn-cloudflare.yml` — CDN Deploy to Cloudflare R2

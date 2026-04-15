@@ -1,0 +1,123 @@
+name: Promote Release Branch to Main
+
+on:
+  workflow_call:
+    inputs:
+      confirm:
+        description: "Explicit confirmation for manual wrappers. Ignored when invoked by another workflow."
+        required: false
+        default: false
+        type: boolean
+      base_branch:
+        description: "Stable branch that receives the promotion PR"
+        required: false
+        default: "main"
+        type: string
+      head_branch:
+        description: "Prerelease branch promoted to stable"
+        required: false
+        default: "release"
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  promote:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.confirm == true }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Fetch branches and tags
+        run: |
+          git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*" --tags
+
+      - name: Resolve latest RC tag
+        id: rc
+        env:
+          HEAD_BRANCH: ${{ inputs.head_branch }}
+          BASE_BRANCH: ${{ inputs.base_branch }}
+        run: |
+          tag=$(git tag --merged "origin/${HEAD_BRANCH}" --sort=-version:refname | grep -E -- '-rc\.[0-9]+$' | head -n 1)
+
+          if [ -z "$tag" ]; then
+            echo "::error::No RC tag found on ${HEAD_BRANCH}"
+            exit 1
+          fi
+
+          if ! git rev-parse --verify "origin/${BASE_BRANCH}" >/dev/null 2>&1; then
+            echo "::error::Base branch ${BASE_BRANCH} was not fetched"
+            exit 1
+          fi
+
+          if ! git rev-parse --verify "origin/${HEAD_BRANCH}" >/dev/null 2>&1; then
+            echo "::error::Head branch ${HEAD_BRANCH} was not fetched"
+            exit 1
+          fi
+
+          has_diff="true"
+          if [ -z "$(git log --oneline "origin/${BASE_BRANCH}..origin/${HEAD_BRANCH}" | head -n 1)" ]; then
+            echo "::notice::${HEAD_BRANCH} has no changes ahead of ${{ inputs.base_branch }}"
+            has_diff="false"
+          fi
+
+          {
+            echo "tag=$tag"
+            echo "has_diff=$has_diff"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing promotion PR
+        id: existing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_BRANCH: ${{ inputs.base_branch }}
+          HEAD_BRANCH: ${{ inputs.head_branch }}
+        run: |
+          pr_number=$(gh pr list \
+            --repo "$GITHUB_REPOSITORY" \
+            --base "$BASE_BRANCH" \
+            --head "$HEAD_BRANCH" \
+            --state open \
+            --json number \
+            --jq '.[0].number // ""')
+
+          echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+
+          if [ -n "$pr_number" ]; then
+            echo "::notice::Promotion PR already open: #$pr_number"
+          fi
+
+      - name: Create promotion PR
+        if: ${{ steps.existing.outputs.pr_number == '' && steps.rc.outputs.has_diff == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_BRANCH: ${{ inputs.base_branch }}
+          HEAD_BRANCH: ${{ inputs.head_branch }}
+          RC_TAG: ${{ steps.rc.outputs.tag }}
+        run: |
+          body_file=$(mktemp)
+
+          cat > "$body_file" <<EOF
+          ## Promote Release Candidate -> Stable
+
+          **RC:** \`${RC_TAG}\`
+
+          ### Checklist
+          - [ ] QA sign-off completado
+          - [ ] Changelog revisado
+          - [ ] Build o artefactos validados
+          - [ ] No hay RCs pendientes sin revisar
+          EOF
+
+          gh pr create \
+            --repo "$GITHUB_REPOSITORY" \
+            --base "$BASE_BRANCH" \
+            --head "$HEAD_BRANCH" \
+            --title "chore(release): promote ${RC_TAG} to stable" \
+            --body-file "$body_file"
