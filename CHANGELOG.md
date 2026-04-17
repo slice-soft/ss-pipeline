@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.22.1](https://github.com/slice-soft/ss-pipeline/compare/v0.22.0...v0.22.1) (2026-04-17)
+
+
+### Bug Fixes
+
+* update regex for RC tag detection in promote-release workflow ([#103](https://github.com/slice-soft/ss-pipeline/issues/103)) ([ea8e828](https://github.com/slice-soft/ss-pipeline/commit/ea8e828a248de7fbb6f17dd54a21964835a50f25))
+
 ## [0.22.0](https://github.com/slice-soft/ss-pipeline/compare/v0.21.0...v0.22.0) (2026-04-15)
 
 
