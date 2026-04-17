@@ -44,7 +44,7 @@ jobs:
           HEAD_BRANCH: ${{ inputs.head_branch }}
           BASE_BRANCH: ${{ inputs.base_branch }}
         run: |
-          tag=$(git tag --merged "origin/${HEAD_BRANCH}" --sort=-version:refname | grep -E -- '-rc\.[0-9]+$' | head -n 1)
+          tag=$(git tag --merged "origin/${HEAD_BRANCH}" --sort=-version:refname | grep -E -- '-rc(\.[0-9]+)?$' | head -n 1)
 
           if [ -z "$tag" ]; then
             echo "::error::No RC tag found on ${HEAD_BRANCH}"
