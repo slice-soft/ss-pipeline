@@ -1,0 +1,93 @@
+name: Release Go Library
+
+# Reusable workflow for Go library releases.
+# Runs release-please and then verifies the released module is reachable
+# via the Go module proxy and checksum database (sum.golang.org).
+#
+# The verify step retries for up to ~5 minutes because the Go proxy
+# indexes new versions asynchronously after a tag is pushed. If the
+# module is still unreachable after all attempts, the job fails and
+# surfaces a clear error so the team can act before users are affected.
+#
+# Usage:
+#   jobs:
+#     release:
+#       uses: slice-soft/ss-pipeline/.github/workflows/release-go-library.yml@v0
+#       with:
+#         module: github.com/your-org/your-module
+#       secrets: inherit
+
+on:
+  workflow_call:
+    inputs:
+      module:
+        description: "Go module path to verify after release (e.g. github.com/slice-soft/ss-keel-redis)"
+        required: true
+        type: string
+      go_version:
+        description: "Go version for the proxy smoke test"
+        required: false
+        default: "stable"
+        type: string
+      retry_attempts:
+        description: "Max attempts to verify module indexing (30 s between each)"
+        required: false
+        default: 10
+        type: number
+    outputs:
+      release_created:
+        value: ${{ jobs.release.outputs.release_created }}
+      releases_created:
+        value: ${{ jobs.release.outputs.releases_created }}
+      tag_name:
+        value: ${{ jobs.release.outputs.tag_name }}
+      release_channel:
+        value: ${{ jobs.release.outputs.release_channel }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    uses: slice-soft/ss-pipeline/.github/workflows/create-release.yml@v0
+    secrets: inherit
+
+  verify-proxy:
+    name: Verify Go Proxy Indexing
+    needs: release
+    if: needs.release.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go_version }}
+
+      - name: Verify module is indexed
+        env:
+          MODULE: ${{ inputs.module }}
+          VERSION: ${{ needs.release.outputs.tag_name }}
+          ATTEMPTS: ${{ inputs.retry_attempts }}
+        run: |
+          dir=$(mktemp -d)
+          cd "$dir"
+          go mod init smoke-test
+
+          echo "Verifying ${MODULE}@${VERSION} is reachable via proxy.golang.org + sum.golang.org..."
+
+          for i in $(seq 1 "$ATTEMPTS"); do
+            echo "Attempt ${i}/${ATTEMPTS}..."
+            if go get "${MODULE}@${VERSION}" 2>&1; then
+              echo "Module ${MODULE}@${VERSION} indexed and installable."
+              exit 0
+            fi
+            if [ "$i" -lt "$ATTEMPTS" ]; then
+              echo "Not yet indexed. Waiting 30 s before retry..."
+              sleep 30
+            fi
+          done
+
+          echo "::error::${MODULE}@${VERSION} was not indexed in the Go proxy/sumdb after ${ATTEMPTS} attempts (~$((ATTEMPTS / 2)) min)."
+          echo "::error::Users running 'go get ${MODULE}@latest' will get a verification error."
+          echo "::error::Check https://sum.golang.org/lookup/${MODULE}@${VERSION} manually."
+          exit 1
