@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.23.0](https://github.com/slice-soft/ss-pipeline/compare/v0.22.1...v0.23.0) (2026-04-22)
+
+
+### Features
+
+* add reusable workflow for Go library releases with proxy verification ([#105](https://github.com/slice-soft/ss-pipeline/issues/105)) ([1f10d5c](https://github.com/slice-soft/ss-pipeline/commit/1f10d5ce4b6339286d4e869e0f5297e1a953c27d))
+
 ## [0.22.1](https://github.com/slice-soft/ss-pipeline/compare/v0.22.0...v0.22.1) (2026-04-17)
 
 
