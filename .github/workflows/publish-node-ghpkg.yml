@@ -2,7 +2,6 @@ name: Publish Node.js Package to GitHub Packages
 
 # Reusable workflow to publish a Node.js package to GitHub Packages (npm registry).
 # Does NOT publish to the public npm registry.
-#
 # Typical usage:
 #   publish:
 #     needs: [release, build]
