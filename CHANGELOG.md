@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.24.0](https://github.com/slice-soft/ss-pipeline/compare/v0.23.0...v0.24.0) (2026-04-27)
+
+
+### Features
+
+* add reusable workflow for publishing Node.js packages to GitHub Packages ([#107](https://github.com/slice-soft/ss-pipeline/issues/107)) ([53fb744](https://github.com/slice-soft/ss-pipeline/commit/53fb744c151dd59f602e52f28724da2aee9fd951))
+
 ## [0.23.0](https://github.com/slice-soft/ss-pipeline/compare/v0.22.1...v0.23.0) (2026-04-22)
 
 
