@@ -1,0 +1,124 @@
+name: Release Stencil Web Components Library
+
+# Full release pipeline for Stencil-based Web Component libraries.
+# Runs release-please, builds the library, publishes to GitHub Packages,
+# and optionally deploys CDN artifacts to Cloudflare R2.
+#
+# Typical usage:
+#   release:
+#     uses: slice-soft/ss-pipeline/.github/workflows/release-stencil-lib.yml@v0
+#     with:
+#       stencil-namespace: my-lib-namespace
+#     secrets: inherit
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: "Node.js version"
+        type: string
+        default: "22"
+
+      stencil-namespace:
+        description: "Stencil namespace (matches the namespace field in stencil.config.ts). Used to locate the chunked CDN bundles at dist/{namespace}/."
+        type: string
+        required: true
+
+      cdn-destination-prefix:
+        description: "Destination prefix in the R2 bucket (must end with /). Example: 'web-components/'"
+        type: string
+        default: "web-components/"
+
+      deploy-cdn:
+        description: "Deploy CDN artifacts to Cloudflare R2 after a release."
+        type: boolean
+        default: true
+
+    secrets:
+      R2_ACCESS_KEY_ID:
+        required: true
+      R2_SECRET_ACCESS_KEY:
+        required: true
+      R2_ENDPOINT:
+        required: true
+      R2_BUCKET:
+        required: true
+      CDN_BASE_URL:
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+
+jobs:
+  release:
+    uses: slice-soft/ss-pipeline/.github/workflows/create-release.yml@v0
+    secrets: inherit
+
+  build:
+    needs: release
+    if: ${{ needs.release.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload npm artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-dist
+          path: |
+            dist/
+            loader/
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Upload CDN artifact
+        if: ${{ inputs.deploy-cdn == true }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdn-dist
+          path: |
+            loader/
+            dist/${{ inputs.stencil-namespace }}/
+          retention-days: 1
+          if-no-files-found: error
+
+  publish:
+    needs: [release, build]
+    if: ${{ needs.release.outputs.release_created == 'true' }}
+    uses: slice-soft/ss-pipeline/.github/workflows/publish-node-ghpkg.yml@v0
+    with:
+      node-version: ${{ inputs.node-version }}
+      artifact-name: npm-dist
+      artifact-path: "."
+    secrets: inherit
+
+  deploy-cdn:
+    needs: [release, build]
+    if: ${{ needs.release.outputs.release_created == 'true' && inputs.deploy-cdn == true }}
+    uses: slice-soft/ss-pipeline/.github/workflows/deploy-cdn-cloudflare.yml@v0
+    with:
+      artifact-name:      cdn-dist
+      destination-prefix: ${{ inputs.cdn-destination-prefix }}
+      version:            ${{ needs.release.outputs.tag_name }}
+    secrets:
+      R2_ACCESS_KEY_ID:     ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_ENDPOINT:          ${{ secrets.R2_ENDPOINT }}
+      R2_BUCKET:            ${{ secrets.R2_BUCKET }}
+      CDN_BASE_URL:         ${{ secrets.CDN_BASE_URL }}
