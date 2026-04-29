@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.25.1](https://github.com/slice-soft/ss-pipeline/compare/v0.25.0...v0.25.1) (2026-04-29)
+
+
+### Bug Fixes
+
+* update GitHub token usage in publish workflow ([#113](https://github.com/slice-soft/ss-pipeline/issues/113)) ([e603bb3](https://github.com/slice-soft/ss-pipeline/commit/e603bb39e8bb023d74c201ce3d47518470915c94))
+
 ## [0.25.0](https://github.com/slice-soft/ss-pipeline/compare/v0.24.0...v0.25.0) (2026-04-29)
 
 
