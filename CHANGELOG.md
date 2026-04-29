@@ -5,6 +5,19 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.25.0](https://github.com/slice-soft/ss-pipeline/compare/v0.24.0...v0.25.0) (2026-04-29)
+
+
+### Features
+
+* add release workflow for Stencil Web Components Library ([#111](https://github.com/slice-soft/ss-pipeline/issues/111)) ([3f1f58c](https://github.com/slice-soft/ss-pipeline/commit/3f1f58cd0c215edab3e7001f3dd14910eaee5b7b))
+
+
+### Bug Fixes
+
+* regenerate version major ([#109](https://github.com/slice-soft/ss-pipeline/issues/109)) ([ba064fd](https://github.com/slice-soft/ss-pipeline/commit/ba064fd78100a4737f3d5e20a90dbf8979edf010))
+* regenerate version major ([#110](https://github.com/slice-soft/ss-pipeline/issues/110)) ([5a5f89e](https://github.com/slice-soft/ss-pipeline/commit/5a5f89e90f71b47c91ed6d10f6339734cb9863ed))
+
 ## [0.24.0](https://github.com/slice-soft/ss-pipeline/compare/v0.23.0...v0.24.0) (2026-04-27)
 
 
