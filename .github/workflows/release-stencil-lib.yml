@@ -13,6 +13,14 @@ name: Release Stencil Web Components Library
 
 on:
   workflow_call:
+    outputs:
+      release_created:
+        description: "True if a release was created in this run"
+        value: ${{ jobs.release.outputs.release_created }}
+      tag_name:
+        description: "Tag of the created release"
+        value: ${{ jobs.release.outputs.tag_name }}
+
     inputs:
       node-version:
         description: "Node.js version"
@@ -33,6 +41,11 @@ on:
         description: "Deploy CDN artifacts to Cloudflare R2 after a release."
         type: boolean
         default: true
+
+      include-wrapper-sources:
+        description: "Upload packages/ directory as wrapper-sources artifact for downstream wrapper build jobs."
+        type: boolean
+        default: false
 
     secrets:
       R2_ACCESS_KEY_ID:
@@ -95,6 +108,15 @@ jobs:
           path: |
             loader/
             dist/${{ inputs.stencil-namespace }}/
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Upload wrapper sources artifact
+        if: ${{ inputs.include-wrapper-sources == true }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: wrapper-sources
+          path: packages/
           retention-days: 1
           if-no-files-found: error
 
