@@ -1,0 +1,110 @@
+name: Validate Gitflow PR
+
+# Reusable workflow that enforces the SliceSoft gitflow conventions on a PR:
+#   - Branch name:  <type>/<issue>-<kebab-desc>
+#                   type in (feature|fix|bugfix|hotfix|refactor|chore|spike)
+#   - PR title:     Conventional Commits + trailing (#<issue>)
+#   - Promotion order (qa -> staging -> release): a feature PR into `staging`
+#     must already be present in `qa`; into `release` must be in `qa` AND `staging`.
+#
+# Technical / release-please branches are exempt from the branch-name & title checks.
+# Environment branch names are parameterizable (defaults match the gitflow directive).
+#
+# Typical usage in a repo:
+#   jobs:
+#     validate:
+#       uses: slice-soft/ss-pipeline/.github/workflows/validate-gitflow-pr.yml@v0
+
+on:
+  workflow_call:
+    inputs:
+      dev_branch:
+        description: "Developer integration environment branch"
+        required: false
+        default: "qa"
+        type: string
+      qa_branch:
+        description: "Team QA environment branch"
+        required: false
+        default: "staging"
+        type: string
+      regression_branch:
+        description: "Regression / release-candidate branch"
+        required: false
+        default: "release"
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch name
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          REG: ${{ inputs.regression_branch }}
+        run: |
+          set -euo pipefail
+          case "$HEAD_REF" in
+            conflicts/*|release-please--*|"$REG")
+              echo "Exempt branch: $HEAD_REF"; exit 0 ;;
+          esac
+          REGEX='^(feature|fix|bugfix|hotfix|refactor|chore|spike)/[0-9]+-[a-z0-9]+(-[a-z0-9]+)*$'
+          if [[ ! "$HEAD_REF" =~ $REGEX ]]; then
+            echo "::error::Invalid branch name '$HEAD_REF'. Expected <type>/<issue>-kebab-desc"
+            exit 1
+          fi
+          echo "OK: $HEAD_REF"
+
+  pr-title:
+    if: ${{ !startsWith(github.head_ref, 'release-please--') && !startsWith(github.head_ref, 'conflicts/') && github.head_ref != inputs.regression_branch }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title (Conventional Commits + issue)
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+          REGEX='^(feat|fix|refactor|perf|chore|ci|test|docs|revert)(\([a-z0-9-]+\))?!?: .+ \(#[0-9]+\)$'
+          if [[ ! "$PR_TITLE" =~ $REGEX ]]; then
+            echo "::error::Invalid PR title '$PR_TITLE'"
+            echo "Example: feat: add delay handling for accept button (#123)"
+            exit 1
+          fi
+          echo "OK: $PR_TITLE"
+
+  promotion-order:
+    if: ${{ startsWith(github.head_ref, 'feature/') || startsWith(github.head_ref, 'fix/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Verify promotion order
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+          DEV: ${{ inputs.dev_branch }}
+          QA: ${{ inputs.qa_branch }}
+          REG: ${{ inputs.regression_branch }}
+        run: |
+          set -euo pipefail
+          ISSUE="$(printf '%s' "$HEAD_REF" | grep -oE '^[a-z]+/[0-9]+' | grep -oE '[0-9]+' | head -1)"
+          [ -n "$ISSUE" ] || { echo "::error::Cannot extract issue number from '$HEAD_REF'"; exit 1; }
+
+          present_in () {
+            git fetch origin "$1" --quiet || true
+            [ -n "$(git log --fixed-strings --grep "(#$ISSUE)" "origin/$1" --format=%H | head -1)" ]
+          }
+
+          if [ "$BASE_REF" = "$QA" ]; then
+            present_in "$DEV" || { echo "::error::#$ISSUE not yet in $DEV (Dev). Promote it there first."; exit 1; }
+          elif [ "$BASE_REF" = "$REG" ]; then
+            present_in "$DEV" || { echo "::error::#$ISSUE not in $DEV (Dev)."; exit 1; }
+            present_in "$QA"  || { echo "::error::#$ISSUE not in $QA (QA)."; exit 1; }
+          else
+            echo "Base '$BASE_REF' has no promotion-order prerequisite."
+          fi
+          echo "Promotion order OK: #$ISSUE -> $BASE_REF"
