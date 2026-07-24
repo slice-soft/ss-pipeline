@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.26.0](https://github.com/slice-soft/ss-pipeline/compare/v0.25.1...v0.26.0) (2026-07-24)
+
+
+### Features
+
+* **gitflow:** remove promote-release + release-source guard, add gitflow PR validation ([#115](https://github.com/slice-soft/ss-pipeline/issues/115)) ([2a16e10](https://github.com/slice-soft/ss-pipeline/commit/2a16e10bec84f1e59a256c29b3e367572dcd47d5))
+
 ## [0.25.1](https://github.com/slice-soft/ss-pipeline/compare/v0.25.0...v0.25.1) (2026-04-29)
 
 
