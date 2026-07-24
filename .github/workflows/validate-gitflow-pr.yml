@@ -10,10 +10,20 @@ name: Validate Gitflow PR
 # Technical / release-please branches are exempt from the branch-name & title checks.
 # Environment branch names are parameterizable (defaults match the gitflow directive).
 #
-# Typical usage in a repo:
+# Typical usage in a repo. Copy the trigger as-is: `edited` is NOT one of the
+# default pull_request types (opened|synchronize|reopened), so without it a fix
+# to an invalid PR title never re-runs `pr-title` and the only way to get a green
+# check is to close and reopen the PR.
+#
+#   on:
+#     pull_request:
+#       types: [opened, synchronize, reopened, edited]
+#       branches: [qa, staging, release, main]
+#
 #   jobs:
 #     validate:
 #       uses: slice-soft/ss-pipeline/.github/workflows/validate-gitflow-pr.yml@v0
+#       secrets: inherit
 
 on:
   workflow_call:
