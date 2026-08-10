@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.27.0](https://github.com/slice-soft/ss-pipeline/compare/v0.26.0...v0.27.0) (2026-08-10)
+
+
+### Features
+
+* **gitflow:** make the promotion chain optional and fix the caller example ([#117](https://github.com/slice-soft/ss-pipeline/issues/117)) ([b6a871f](https://github.com/slice-soft/ss-pipeline/commit/b6a871f32ba093b8d31bd624a5b33708c5539300))
+
 ## [0.26.0](https://github.com/slice-soft/ss-pipeline/compare/v0.25.1...v0.26.0) (2026-07-24)
 
 
