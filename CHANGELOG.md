@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.27.1](https://github.com/slice-soft/ss-pipeline/compare/v0.27.0...v0.27.1) (2026-11-21)
+
+
+### Bug Fixes
+
+* **pages-deploy:** replace removed cloudflare/pages-action with wrangler-action ([#119](https://github.com/slice-soft/ss-pipeline/issues/119)) ([ae99274](https://github.com/slice-soft/ss-pipeline/commit/ae992747fd9ad62a16b4a119f65c8db8604f67fa))
+
 ## [0.27.0](https://github.com/slice-soft/ss-pipeline/compare/v0.26.0...v0.27.0) (2026-08-10)
 
 
