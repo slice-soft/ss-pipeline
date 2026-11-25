@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.27.2](https://github.com/slice-soft/ss-pipeline/compare/v0.27.1...v0.27.2) (2026-11-25)
+
+
+### Bug Fixes
+
+* **desktop-python:** drop the macOS Intel build and move arm64 to macos-15 ([#121](https://github.com/slice-soft/ss-pipeline/issues/121)) ([02a4a71](https://github.com/slice-soft/ss-pipeline/commit/02a4a7169df34a0c6e84f8249260cc540be9441c))
+
 ## [0.27.1](https://github.com/slice-soft/ss-pipeline/compare/v0.27.0...v0.27.1) (2026-11-21)
 
 
