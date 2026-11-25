@@ -3,7 +3,7 @@ name: Release Desktop Python App - PyInstaller
 # Reusable workflow to build and distribute a Python desktop app.
 #
 # Artifacts per platform:
-#   macOS  arm64 + x86_64  →  CLI binary (.zip)  +  GUI .app bundle (.zip)  +  Homebrew bundle (.zip)
+#   macOS  arm64           →  CLI binary (.zip)  +  GUI .app bundle (.zip)  +  Homebrew bundle (.zip)
 #   Linux  x86_64          →  CLI binary (.tar.gz)  [no GUI build]
 #   Windows x86_64         →  CLI .exe (.zip)  +  GUI no-console .exe (.zip)
 #
@@ -14,6 +14,9 @@ name: Release Desktop Python App - PyInstaller
 #   - Add assets/icon.icns for macOS icon
 #   - Add assets/icon.ico  for Windows icon
 #   - Homebrew Cask publication assumes a public GitHub release
+#   - No macOS Intel build: torch has no macOS x86_64 wheels after 2.2.2 and
+#     numba/llvmlite none after 0.62.1/0.45.1, so the build fails compiling
+#     llvmlite. The cask is Apple Silicon only (depends_on arch: :arm64).
 #
 # Typical usage:
 #   build:
@@ -76,10 +79,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-14        # Apple Silicon (arm64)
+          - os: macos-15        # Apple Silicon (arm64); macos-14 is no longer supported
             platform: macos-arm64
-          - os: macos-15-intel  # Intel (x86_64)
-            platform: macos-x86_64
           - os: ubuntu-22.04    # Linux x86_64
             platform: linux-x86_64
           - os: windows-latest  # Windows x86_64
@@ -275,11 +276,9 @@ jobs:
           APP:  ${{ inputs.app-name }}
         run: |
           BASE="https://github.com/${REPO}/releases/download/${TAG}"
-          curl -fsSL "${BASE}/${APP}-homebrew_macos-arm64.zip"  -o arm64.zip
-          curl -fsSL "${BASE}/${APP}-homebrew_macos-x86_64.zip" -o x86_64.zip
+          curl -fsSL "${BASE}/${APP}-homebrew_macos-arm64.zip" -o arm64.zip
 
-          echo "SHA256_ARM64=$(sha256sum arm64.zip  | awk '{print $1}')" >> $GITHUB_ENV
-          echo "SHA256_X86=$(sha256sum   x86_64.zip | awk '{print $1}')" >> $GITHUB_ENV
+          echo "SHA256_ARM64=$(sha256sum arm64.zip | awk '{print $1}')" >> $GITHUB_ENV
           echo "VERSION=${TAG#v}"                                         >> $GITHUB_ENV
 
       - name: Update or create Homebrew Cask
@@ -307,7 +306,6 @@ jobs:
           app         = os.environ["APP"]
           version     = os.environ["VERSION"]
           sha_arm     = os.environ["SHA256_ARM64"]
-          sha_x86     = os.environ["SHA256_X86"]
           repo        = os.environ["REPO"]
           description = os.environ["DESCRIPTION"]
           path        = f"Casks/{app}.rb"
@@ -315,14 +313,10 @@ jobs:
           content = f'''cask "{app}" do
             version "{version}"
 
-            on_arm do
-              url "https://github.com/{repo}/releases/download/v#{{version}}/{app}-homebrew_macos-arm64.zip"
-              sha256 "{sha_arm}"
-            end
-            on_intel do
-              url "https://github.com/{repo}/releases/download/v#{{version}}/{app}-homebrew_macos-x86_64.zip"
-              sha256 "{sha_x86}"
-            end
+            url "https://github.com/{repo}/releases/download/v#{{version}}/{app}-homebrew_macos-arm64.zip"
+            sha256 "{sha_arm}"
+
+            depends_on arch: :arm64
 
             name "{app}"
             desc "{description}"
