@@ -9,6 +9,14 @@ name: Create Release - Release Please
 #   releases_created: true if any release was created (monorepo mode)
 #   tag_name:         the tag of the created release (single-package only)
 #
+# rc strategy: after a promotion (release -> main, stable release, release
+# fast-forwarded to main) the rc manifest still holds the old prereleases, so
+# release-please would keep counting from them (2.0.0-rc.4 after 2.0.0). On the
+# release branch this workflow first compares both manifests: when a package's
+# rc version is not newer than its stable version, it skips release-please for
+# this run and opens a "sync rc manifest" PR instead. Once that PR is merged the
+# next rc builds on the stable version (2.0.0 + feat -> 2.1.0-rc.1).
+#
 # Typical usage:
 #   release:
 #     uses: slice-soft/ss-pipeline/.github/workflows/create-release.yml@v0
@@ -31,6 +39,11 @@ on:
         required: false
         default: ".release-please-manifest.rc.json"
         type: string
+      sync_rc_manifest:
+        description: "rc strategy: before releasing on the release branch, open a PR that moves stale rc manifest entries to their stable version (and skip release-please until it is merged)"
+        required: false
+        default: true
+        type: boolean
     outputs:
       release_created:
         description: "True if a single-package release was created"
@@ -46,6 +59,9 @@ on:
       target_branch:
         description: "Resolved target branch for release-please"
         value: ${{ jobs.release-please.outputs.target_branch }}
+      rc_manifest_stale:
+        description: "rc strategy: true when the rc manifest lagged behind the stable one and a sync PR was opened instead of releasing"
+        value: ${{ jobs.release-please.outputs.rc_manifest_stale }}
 
 permissions:
   contents: write
@@ -60,6 +76,7 @@ jobs:
       tag_name: ${{ steps.release.outputs.tag_name }}
       release_channel: ${{ steps.context.outputs.release_channel }}
       target_branch: ${{ steps.context.outputs.target_branch }}
+      rc_manifest_stale: ${{ steps.sync.outputs.stale }}
 
     steps:
       - name: Resolve release context
@@ -112,9 +129,78 @@ jobs:
             echo "should_run=$should_run"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Checkout release branch (rc manifest sync)
+        if: ${{ steps.context.outputs.should_run == 'true' && steps.context.outputs.release_channel == 'rc' && inputs.sync_rc_manifest }}
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.context.outputs.target_branch }}
+
+      - name: Compare rc manifest with stable versions
+        id: sync
+        if: ${{ steps.context.outputs.should_run == 'true' && steps.context.outputs.release_channel == 'rc' && inputs.sync_rc_manifest }}
+        env:
+          RC_MANIFEST_FILE: ${{ inputs.rc_manifest_file }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+
+          rc_path = os.environ["RC_MANIFEST_FILE"]
+          stable_path = ".release-please-manifest.json"
+          out = open(os.environ["GITHUB_OUTPUT"], "a")
+          if not (os.path.exists(rc_path) and os.path.exists(stable_path)):
+              out.write("stale=false\n")
+              raise SystemExit(0)
+
+          def base(version):
+              m = re.match(r"^(\d+)\.(\d+)\.(\d+)", version)
+              return tuple(int(x) for x in m.groups()) if m else (0, 0, 0)
+
+          stable = json.load(open(stable_path))
+          rc = json.load(open(rc_path))
+          changes = []
+          for path, stable_version in stable.items():
+              rc_version = rc.get(path)
+              # Stale: missing, or a prerelease/stable that is not newer than the stable.
+              if rc_version is None or (rc_version != stable_version and base(rc_version) <= base(stable_version)):
+                  changes.append(f"- `{path}`: {rc_version or '(missing)'} -> {stable_version}")
+                  rc[path] = stable_version
+          if changes:
+              json.dump(rc, open(rc_path, "w"), indent=2)
+              open(rc_path, "a").write("\n")
+              open("/tmp/rc-sync-body.md", "w").write(
+                  "The rc manifest still held prereleases that are not newer than the stable versions, "
+                  "so release-please would number the next rcs from them (e.g. 2.0.0-rc.4 after 2.0.0).\n\n"
+                  + "\n".join(changes)
+                  + "\n\nMerge this before the next release: until then release-please is skipped on this branch.\n")
+              print("\n".join(changes))
+          out.write(f"stale={'true' if changes else 'false'}\n")
+          PY
+
+      - name: Open rc manifest sync PR
+        if: ${{ steps.sync.outputs.stale == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RC_MANIFEST_FILE: ${{ inputs.rc_manifest_file }}
+          BASE_BRANCH: ${{ steps.context.outputs.target_branch }}
+        run: |
+          branch="chore/sync-rc-manifest"
+          title="chore(release): sync rc manifest with the stable versions"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$branch"
+          git add "$RC_MANIFEST_FILE"
+          git commit -m "$title"
+          git push --force origin "$branch"
+          if gh pr view "$branch" --json state -q .state 2>/dev/null | grep -q OPEN; then
+            gh pr edit "$branch" --body-file /tmp/rc-sync-body.md
+          else
+            gh pr create --base "$BASE_BRANCH" --head "$branch" --title "$title" --body-file /tmp/rc-sync-body.md
+          fi
+          echo "::warning::rc manifest is behind the stable versions; opened a sync PR and skipped release-please for this run."
+
       - name: Run release-please
         id: release
-        if: ${{ steps.context.outputs.should_run == 'true' }}
+        if: ${{ steps.context.outputs.should_run == 'true' && steps.sync.outputs.stale != 'true' }}
         uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

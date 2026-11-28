@@ -100,6 +100,17 @@ jobs:
 - `release_strategy: stable` keeps the current behavior and reads `release-please-config.json` plus `.release-please-manifest.json`.
 - `release_strategy: rc` expects the caller workflow to run on both `release` and `main`. It reads `release-please-config.rc.json` plus `.release-please-manifest.rc.json` on `release`, and falls back to the stable files on `main`.
 
+After a promotion, `release` is fast-forwarded to `main` and carries the new
+stable manifest, but the rc manifest still holds the old prereleases; release-please
+would then keep counting from them (`2.0.0-rc.4` after the `2.0.0` stable). So on
+the `release` branch the workflow first compares both manifests. When a package's
+rc version is not newer than its stable version it **skips release-please for that
+run** and opens (or updates) a `chore(release): sync rc manifest with the stable
+versions` PR against `release`. Merge it and the next rc builds on the stable
+(`2.0.0` + `feat` → `2.1.0-rc.1`). Turn it off with `sync_rc_manifest: false`;
+the `rc_manifest_stale` output tells callers that a sync PR was opened instead of
+releasing.
+
 Example opt-in for RC repositories:
 
 ```yaml
