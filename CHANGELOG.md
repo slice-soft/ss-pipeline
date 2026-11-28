@@ -5,6 +5,13 @@
 
 * add validate pr title ([#51](https://github.com/slice-soft/ss-pipeline/issues/51)) ([bfd7007](https://github.com/slice-soft/ss-pipeline/commit/bfd700770c1269baf0a487e59b2e2fac6708294e))
 
+## [0.27.3](https://github.com/slice-soft/ss-pipeline/compare/v0.27.2...v0.27.3) (2026-11-28)
+
+
+### Bug Fixes
+
+* **create-release:** sync the rc manifest with stable versions before rc releases ([#123](https://github.com/slice-soft/ss-pipeline/issues/123)) ([aaaf603](https://github.com/slice-soft/ss-pipeline/commit/aaaf603e7476d8f06d96a238a5b3f35eaa94a200))
+
 ## [0.27.2](https://github.com/slice-soft/ss-pipeline/compare/v0.27.1...v0.27.2) (2026-11-25)
 
 
